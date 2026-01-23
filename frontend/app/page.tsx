@@ -6,7 +6,7 @@ import { AuroraBackground } from "../components/ui/aurora-background";
 
 export function AuroraBackgroundDemo() {
   return (
-    <AuroraBackground>
+    <AuroraBackground className="">
       <motion.div
         initial={{ opacity: 0.0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -29,4 +29,8 @@ export function AuroraBackgroundDemo() {
       </motion.div>
     </AuroraBackground>
   );
+}
+
+export default function Page() {
+  return <AuroraBackgroundDemo />;
 }
