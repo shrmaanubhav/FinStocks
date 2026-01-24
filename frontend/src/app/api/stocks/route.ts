@@ -112,8 +112,8 @@ export async function POST(request: NextRequest) {
           weekOpen: latestData.Open,
           volume: latestData.Volume,
           lastUpdated: latestData.Date,
-          // Include historical data for charts (last 12 weeks)
-          history: stockHistory.slice(-12).map((point: StockDataPoint) => ({
+          // Include historical data for charts (full range)
+          history: stockHistory.map((point: StockDataPoint) => ({
             date: point.Date,
             open: point.Open,
             high: point.High,
