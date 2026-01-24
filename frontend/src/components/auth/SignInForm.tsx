@@ -121,6 +121,8 @@ export default function SignInForm() {
                 Sign in with X
               </button>
             </div>
+            {/* Clerk CAPTCHA element for bot protection */}
+            <div id="clerk-captcha"></div>
             <div className="relative py-3 sm:py-5">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-200 dark:border-gray-800"></div>

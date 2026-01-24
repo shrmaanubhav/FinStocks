@@ -3,11 +3,17 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import OnboardingModal from "@/components/onboarding/OnboardingModal";
+import LoadingScreen from "./loading-screen";
 
 export default function LandingPage() {
   const { isSignedIn, user } = useUser();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isRevealed, setIsRevealed] = useState(false);
+  const [navRevealed, setNavRevealed] = useState(false);
+  const [heroRevealed, setHeroRevealed] = useState(false);
+  const [featuresRevealed, setFeaturesRevealed] = useState(false);
+  const [footerRevealed, setFooterRevealed] = useState(false);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -15,6 +21,23 @@ export default function LandingPage() {
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  // Staggered reveal animations
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsRevealed(true);
+      // Start navigation animation immediately
+      setTimeout(() => setNavRevealed(true), 200);
+      // Hero section after navigation
+      setTimeout(() => setHeroRevealed(true), 600);
+      // Features after hero
+      setTimeout(() => setFeaturesRevealed(true), 1000);
+      // Footer last
+      setTimeout(() => setFooterRevealed(true), 1400);
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
   // Check if user needs onboarding
@@ -36,7 +59,11 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white overflow-hidden relative">
+    <>
+      <LoadingScreen />
+      <div className={`min-h-screen bg-gray-950 text-white overflow-hidden relative transition-all duration-1000 ease-out ${
+        isRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+      }`}>
       {/* Animated gradient background */}
       <div 
         className="fixed inset-0 opacity-30"
@@ -60,7 +87,9 @@ export default function LandingPage() {
       <div className="fixed top-1/2 left-1/2 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '2s' }} />
 
       {/* Navigation */}
-      <nav className="relative z-10 border-b border-white/5">
+      <nav className={`relative z-10 border-b border-white/5 transition-all duration-700 ease-out ${
+        navRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
+      }`}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -103,7 +132,9 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <main className="relative z-10">
+      <main className={`relative z-10 transition-all duration-700 ease-out ${
+        heroRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}>
         <div className="max-w-7xl mx-auto px-6 pt-20 pb-32">
           <div className="text-center max-w-4xl mx-auto">
             {/* Badge */}
@@ -172,7 +203,9 @@ export default function LandingPage() {
           </div>
 
           {/* Feature Cards */}
-          <div id="features" className="mt-32 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div id="features" className={`mt-32 grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-700 ease-out ${
+            featuresRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+          }`}>
             {/* Portfolio Doctor Card */}
             <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 backdrop-blur-xl hover:border-brand-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-brand-500/10">
               <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-brand-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -237,7 +270,9 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-white/5">
+      <footer className={`relative z-10 border-t border-white/5 transition-all duration-700 ease-out ${
+        footerRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+      }`}>
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -268,6 +303,6 @@ export default function LandingPage() {
           }}
         />
       )}
-    </div>
+    </>
   );
 }

@@ -54,29 +54,6 @@ export default function AuthLayout({
                     Fin<span className="text-brand-400">Stocks</span>
                   </span>
                 </Link>
-                <h2 className="text-2xl font-bold text-white mb-4 text-center">
-                  Your Portfolio's Medical Report
-                </h2>
-                <p className="text-center text-gray-400 dark:text-white/60 mb-8">
-                  AI-powered financial intelligence for Indian retail investors. 
-                  Get transparent health scores, Hinglish news summaries, and smart portfolio insights.
-                </p>
-                
-                {/* Feature Pills */}
-                <div className="flex flex-wrap gap-2 justify-center">
-                  <span className="px-4 py-2 rounded-full bg-white/10 text-white/80 text-sm border border-white/10">
-                    🏥 Portfolio Health Score
-                  </span>
-                  <span className="px-4 py-2 rounded-full bg-white/10 text-white/80 text-sm border border-white/10">
-                    📰 Hinglish News Feed
-                  </span>
-                  <span className="px-4 py-2 rounded-full bg-white/10 text-white/80 text-sm border border-white/10">
-                    ⚠️ Risk Signals
-                  </span>
-                  <span className="px-4 py-2 rounded-full bg-white/10 text-white/80 text-sm border border-white/10">
-                    🔒 No Buy/Sell Advice
-                  </span>
-                </div>
               </div>
             </div>
           </div>

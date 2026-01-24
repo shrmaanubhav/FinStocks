@@ -11,8 +11,8 @@ import { useSignUp } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 
-// Multi-step signup with onboarding
-type Step = 1 | 2 | 3 | 4;
+// Multi-step signup with complete onboarding
+type Step = 1 | 2 | 3 | 4 | 5 | 6;
 
 interface FormData {
   // Step 1 - Auth
@@ -24,14 +24,17 @@ interface FormData {
   lastName: string;
   age: number;
   phone: string;
-  // Step 3 - Financial
+  // Step 3 - Location
   city: string;
   state: string;
+  // Step 4 - Financial
   annualIncome: string;
   monthlyExpenditure: string;
   maritalStatus: string;
   children: number;
-  // Step 4 - Portfolio
+  // Step 5 - Other Investments
+  otherInvestments: string;
+  // Step 6 - Portfolio & Lifestyle
   portfolioMethod: "manual" | "pdf";
   stocks: Array<{ symbol: string; quantity: number; buyPrice: number }>;
   pdfFile: File | null;
@@ -61,10 +64,11 @@ export default function SignUpForm() {
     state: "",
     annualIncome: "",
     monthlyExpenditure: "",
-    maritalStatus: "single",
+    maritalStatus: "",
     children: 0,
+    otherInvestments: "",
     portfolioMethod: "manual",
-    stocks: [{ symbol: "", quantity: 0, buyPrice: 0 }],
+    stocks: [],
     pdfFile: null,
     lifestyle: "",
   });
@@ -161,12 +165,17 @@ export default function SignUpForm() {
           setError("City and state are required");
           return false;
         }
+        return true;
+      case 4:
         if (!formData.annualIncome || !formData.monthlyExpenditure) {
           setError("Income details are required");
           return false;
         }
         return true;
-      case 4:
+      case 5:
+        // Other investments is optional, so no validation needed
+        return true;
+      case 6:
         if (formData.portfolioMethod === "manual" && formData.stocks.some((s) => !s.symbol)) {
           setError("Please enter at least one stock symbol");
           return false;
@@ -175,7 +184,13 @@ export default function SignUpForm() {
           setError("Please upload your portfolio PDF");
           return false;
         }
+        if (!formData.lifestyle) {
+          setError("Please select your lifestyle");
+          return false;
+        }
         return true;
+      default:
+        return false;
     }
   };
 
@@ -201,7 +216,7 @@ export default function SignUpForm() {
       } finally {
         setIsLoading(false);
       }
-    } else if (step < 4) {
+    } else if (step < 6) {
       setStep((prev) => (prev + 1) as Step);
     }
   };
@@ -225,6 +240,7 @@ export default function SignUpForm() {
         monthlyExpenditure: formData.monthlyExpenditure,
         maritalStatus: formData.maritalStatus,
         children: formData.children,
+        otherInvestments: formData.otherInvestments,
         lifestyle: formData.lifestyle,
       };
       localStorage.setItem("finStocksProfile", JSON.stringify(profilePayload));
@@ -244,12 +260,12 @@ export default function SignUpForm() {
   // Progress indicator
   const ProgressBar = () => (
     <div className="flex items-center gap-2 mb-8">
-      {[1, 2, 3, 4].map((s) => (
+      {[1, 2, 3, 4, 5, 6].map((s) => (
         <React.Fragment key={s}>
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all ${s === step ? "bg-brand-500 text-white" : s < step ? "bg-brand-500 text-white" : "bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400"}`}>
             {s < step ? (<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>) : s}
           </div>
-          {s < 4 && <div className={`flex-1 h-1 rounded ${s < step ? "bg-brand-500" : "bg-gray-200 dark:bg-gray-700"}`} />}
+          {s < 6 && <div className={`flex-1 h-1 rounded ${s < step ? "bg-brand-500" : "bg-gray-200 dark:bg-gray-700"}`} />}
         </React.Fragment>
       ))}
     </div>
@@ -258,8 +274,10 @@ export default function SignUpForm() {
   const stepTitles = {
     1: { title: "Create Account", subtitle: "Start your FinStocks journey" },
     2: { title: "Personal Details", subtitle: "Tell us about yourself" },
-    3: { title: "Financial Profile", subtitle: "Help us understand your finances" },
-    4: { title: "Your Portfolio", subtitle: "Add your investments" },
+    3: { title: "Location", subtitle: "Where are you located?" },
+    4: { title: "Financial Profile", subtitle: "Help us understand your finances" },
+    5: { title: "Other Investments", subtitle: "Tell us about your other investments" },
+    6: { title: "Portfolio & Lifestyle", subtitle: "Add your investments and lifestyle" },
   };
 
   return (
@@ -292,6 +310,8 @@ export default function SignUpForm() {
                   Sign up with X
                 </button>
               </div>
+              {/* Clerk CAPTCHA element for bot protection */}
+              <div id="clerk-captcha"></div>
               <div className="relative py-3 sm:py-5">
                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200 dark:border-gray-800"></div></div>
                 <div className="relative flex justify-center text-sm"><span className="p-2 text-gray-400 bg-white dark:bg-gray-900 sm:px-5 sm:py-2">Or</span></div>
@@ -314,21 +334,34 @@ export default function SignUpForm() {
             </div>
           )}
 
-          {/* Step 3: Financial */}
+          {/* Step 3: Location */}
           {step === 3 && (
             <div className="space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 <div><Label>City<span className="text-error-500">*</span></Label><Input type="text" placeholder="Mumbai" value={formData.city} onChange={(e) => updateFormData("city", e.target.value)}/></div>
                 <div><Label>State<span className="text-error-500">*</span></Label><select className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-800 dark:text-white focus:border-brand-500 focus:outline-none" value={formData.state} onChange={(e) => updateFormData("state", e.target.value)}><option value="">Select state</option><option value="AN">Andaman & Nicobar</option><option value="AP">Andhra Pradesh</option><option value="AR">Arunachal Pradesh</option><option value="AS">Assam</option><option value="BR">Bihar</option><option value="CH">Chandigarh</option><option value="CT">Chhattisgarh</option><option value="DN">Dadra & Nagar Haveli</option><option value="DD">Daman & Diu</option><option value="DL">Delhi</option><option value="GA">Goa</option><option value="GJ">Gujarat</option><option value="HR">Haryana</option><option value="HP">Himachal Pradesh</option><option value="JK">Jammu & Kashmir</option><option value="JH">Jharkhand</option><option value="KA">Karnataka</option><option value="KL">Kerala</option><option value="LA">Ladakh</option><option value="LD">Lakshadweep</option><option value="MP">Madhya Pradesh</option><option value="MH">Maharashtra</option><option value="MN">Manipur</option><option value="ML">Meghalaya</option><option value="MZ">Mizoram</option><option value="NL">Nagaland</option><option value="OR">Odisha</option><option value="PY">Puducherry</option><option value="PB">Punjab</option><option value="RJ">Rajasthan</option><option value="SK">Sikkim</option><option value="TN">Tamil Nadu</option><option value="TG">Telangana</option><option value="TR">Tripura</option><option value="UP">Uttar Pradesh</option><option value="UK">Uttarakhand</option><option value="WB">West Bengal</option></select></div>
               </div>
+            </div>
+          )}
+
+          {/* Step 4: Financial */}
+          {step === 4 && (
+            <div className="space-y-5">
               <div><Label>Annual Income<span className="text-error-500">*</span></Label><select className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-800 dark:text-white focus:border-brand-500 focus:outline-none" value={formData.annualIncome} onChange={(e) => updateFormData("annualIncome", e.target.value)}><option value="">Select income range</option><option value="0-5L">Below ₹5 Lakhs</option><option value="5-10L">₹5 - 10 Lakhs</option><option value="10-25L">₹10 - 25 Lakhs</option><option value="25-50L">₹25 - 50 Lakhs</option><option value="50L-1Cr">₹50 Lakhs - 1 Crore</option><option value="1Cr+">Above ₹1 Crore</option></select></div>
               <div><Label>Monthly Expenditure<span className="text-error-500">*</span></Label><select className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-800 dark:text-white focus:border-brand-500 focus:outline-none" value={formData.monthlyExpenditure} onChange={(e) => updateFormData("monthlyExpenditure", e.target.value)}><option value="">Select expenditure range</option><option value="0-25K">Below ₹25,000</option><option value="25-50K">₹25,000 - 50,000</option><option value="50-1L">₹50,000 - 1 Lakh</option><option value="1-2L">₹1 - 2 Lakhs</option><option value="2L+">Above ₹2 Lakhs</option></select></div>
               <div className="grid grid-cols-2 gap-4"><div><Label>Marital Status</Label><select className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-800 dark:text-white focus:border-brand-500 focus:outline-none" value={formData.maritalStatus} onChange={(e) => updateFormData("maritalStatus", e.target.value)}><option value="single">Single</option><option value="married">Married</option><option value="divorced">Divorced</option><option value="widowed">Widowed</option></select></div><div><Label>Children</Label><Input type="number" placeholder="0" value={String(formData.children)} onChange={(e) => updateFormData("children", parseInt(e.target.value) || 0)}/></div></div>
             </div>
           )}
 
-          {/* Step 4: Portfolio */}
-          {step === 4 && (
+          {/* Step 5: Other Investments */}
+          {step === 5 && (
+            <div className="space-y-5">
+              <div><Label>Other Investments (Optional)</Label><textarea className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent text-gray-800 dark:text-white placeholder-gray-400 focus:border-brand-500 focus:outline-none" rows={4} placeholder="Tell us about any other investments you have (mutual funds, bonds, real estate, etc.)..." value={formData.otherInvestments} onChange={(e) => updateFormData("otherInvestments", e.target.value)}/></div>
+            </div>
+          )}
+
+          {/* Step 6: Portfolio & Lifestyle */}
+          {step === 6 && (
             <div className="space-y-5">
               <div><Label>How would you like to add your portfolio?</Label>
                 <div className="grid grid-cols-2 gap-3 mt-2">
@@ -354,14 +387,14 @@ export default function SignUpForm() {
                   {formData.pdfFile ? (<div><div className="text-4xl mb-2">✅</div><p className="font-medium text-gray-800 dark:text-white">{formData.pdfFile.name}</p><p className="text-sm text-gray-500 mt-1">Click or drag to replace</p></div>) : (<div><div className="text-4xl mb-2">📤</div><p className="font-medium text-gray-800 dark:text-white">{isDragActive ? "Drop your file here" : "Drag & drop your PDF"}</p><p className="text-sm text-gray-500 mt-1">or click to browse (max 10MB)</p></div>)}
                 </div>
               )}
-              <div><Label>Lifestyle & Investment Goals</Label><textarea className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent text-gray-800 dark:text-white placeholder-gray-400 focus:border-brand-500 focus:outline-none" rows={3} placeholder="Tell us about your lifestyle, risk appetite, and investment goals..." value={formData.lifestyle} onChange={(e) => updateFormData("lifestyle", e.target.value)}/></div>
+              <div><Label>Lifestyle & Investment Goals<span className="text-error-500">*</span></Label><textarea className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent text-gray-800 dark:text-white placeholder-gray-400 focus:border-brand-500 focus:outline-none" rows={3} placeholder="Tell us about your lifestyle, risk appetite, and investment goals..." value={formData.lifestyle} onChange={(e) => updateFormData("lifestyle", e.target.value)}/></div>
             </div>
           )}
 
           {/* Navigation */}
           <div className="flex gap-3 mt-8">
             {step > 1 && <button type="button" onClick={prevStep} className="flex-1 px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">Back</button>}
-            <Button className="flex-1" size="sm" disabled={isLoading} onClick={step === 4 ? handleSubmit : nextStep}>{isLoading ? "Please wait..." : step === 4 ? "Complete Setup 🚀" : "Continue"}</Button>
+            <Button className="flex-1" size="sm" disabled={isLoading} onClick={step === 6 ? handleSubmit : nextStep}>{isLoading ? "Please wait..." : step === 6 ? "Complete Setup 🚀" : "Continue"}</Button>
           </div>
           {step === 1 && <div className="mt-5"><p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">Already have an account? <Link href="/signin" className="text-brand-500 hover:text-brand-600 dark:text-brand-400">Sign In</Link></p></div>}
         </div>
