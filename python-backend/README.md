@@ -34,6 +34,12 @@ Financial-advice-agent/
    git clone <your-repo-url>
    cd <Stock-advice-agent>
    ```
+1-5. **venv creation**
+   ```
+   py -3.12 -m venv venv312
+   venv312\Scripts\activate
+   ```
+
 2. **Install dependencies**
    ```sh
    pip install -r requirements.txt
@@ -52,6 +58,24 @@ Financial-advice-agent/
    ```
 2. **Open your browser** to the URL shown in the terminal (usually http://localhost:8501)
 3. **Enter your query** in the UI and follow the prompts for advice or strategy.
+
+## Docker
+
+You can run the app in a container. The provided `Dockerfile` uses Python 3.12, installs `requirements.txt`, and starts Streamlit via an entrypoint that will load a `.env` file if present.
+
+- Build the image (run from the repository root):
+```bash
+docker build -t python-backend:latest -f python-backend/Dockerfile python-backend
+```
+- Run the container (maps Streamlit port and loads env from a file):
+```bash
+docker run --rm -p 8501:8501 --env-file python-backend/.env python-backend:latest
+```
+
+- Notes:
+   - The entrypoint sources `/app/.env` at container start if that file exists in the image, and the `--env-file` flag lets you provide environment variables at runtime instead of baking them into the image.
+   - If you prefer mounting the `.env` at runtime instead of using `--env-file`, you can mount the file into the container: `-v $(pwd)/python-backend/.env:/app/.env`.
+   - The app listens on port `8501` inside the container.
 
 ## Notes
 - Make sure your API keys are valid and have sufficient quota.

@@ -2,8 +2,6 @@ from langgraph.graph import StateGraph, END
 from langchain_groq import ChatGroq
 from typing import TypedDict, Literal
 from dotenv import load_dotenv
-from google import genai
-from google.genai import types
 import os
 
 import warnings

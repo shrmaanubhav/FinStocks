@@ -4,9 +4,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 import os, re
 import concurrent.futures
 from dotenv import load_dotenv
-from google import genai
 from datetime import datetime, timedelta
-from google.genai import types
 
 import requests, random, json
 import finnhub
