@@ -1,13 +1,9 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
-import OnboardingModal from "@/components/onboarding/OnboardingModal";
 import LoadingScreen from "./loading-screen";
 
 export default function LandingPage() {
-  const { isSignedIn, user } = useUser();
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isRevealed, setIsRevealed] = useState(false);
   const [navRevealed, setNavRevealed] = useState(false);
@@ -39,24 +35,6 @@ export default function LandingPage() {
 
     return () => clearTimeout(timer);
   }, []);
-
-  // Check if user needs onboarding
-  useEffect(() => {
-    if (isSignedIn && user) {
-      const hasOnboarded = localStorage.getItem(`finstock_onboarded_${user.id}`);
-      if (!hasOnboarded) {
-        setShowOnboarding(true);
-      }
-    }
-  }, [isSignedIn, user]);
-
-  const handleGetStarted = () => {
-    if (isSignedIn) {
-      setShowOnboarding(true);
-    } else {
-      window.location.href = "/signin";
-    }
-  };
 
   return (
     <>
@@ -103,29 +81,12 @@ export default function LandingPage() {
               </span>
             </div>
             <div className="flex items-center gap-4">
-              {isSignedIn ? (
-                <Link
-                  href="/dashboard"
-                  className="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-medium transition-all duration-300 hover:shadow-lg hover:shadow-brand-500/25"
-                >
-                  Dashboard
-                </Link>
-              ) : (
-                <>
-                  <Link
-                    href="/signin"
-                    className="px-5 py-2.5 text-gray-300 hover:text-white transition-colors"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    href="/signup"
-                    className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 font-medium transition-all duration-300"
-                  >
-                    Get Started
-                  </Link>
-                </>
-              )}
+              <Link
+                href="/dashboard"
+                className="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-medium transition-all duration-300 hover:shadow-lg hover:shadow-brand-500/25"
+              >
+                Dashboard
+              </Link>
             </div>
           </div>
         </div>
@@ -163,8 +124,8 @@ export default function LandingPage() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-              <button
-                onClick={handleGetStarted}
+              <Link
+                href="/dashboard"
                 className="group px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-500 to-purple-600 text-white font-semibold text-lg transition-all duration-300 hover:shadow-2xl hover:shadow-brand-500/30 hover:scale-105 flex items-center gap-3"
               >
                 Start Free Health Check
@@ -176,7 +137,7 @@ export default function LandingPage() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
-              </button>
+              </Link>
               <Link
                 href="#features"
                 className="px-8 py-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-sm font-semibold text-lg transition-all duration-300"
@@ -291,18 +252,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-
-      {/* Onboarding Modal */}
-      {showOnboarding && (
-        <OnboardingModal 
-          isOpen={showOnboarding} 
-          onClose={() => setShowOnboarding(false)}
-          onComplete={() => {
-            setShowOnboarding(false);
-            window.location.href = "/dashboard";
-          }}
-        />
-      )}
       </div>
     </>
   );

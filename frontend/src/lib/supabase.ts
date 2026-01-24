@@ -8,7 +8,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Types for our database tables
 export interface UserProfile {
   id: string;
-  clerk_user_id: string;
+  user_id: string;
   name: string;
   age: number | null;
   pan: string | null;
@@ -49,11 +49,11 @@ export interface PortfolioAnalysis {
 
 // Helper functions for database operations
 export const userProfileApi = {
-  async getByClerkId(clerkUserId: string): Promise<UserProfile | null> {
+  async getByUserId(userId: string): Promise<UserProfile | null> {
     const { data, error } = await supabase
       .from("user_profiles")
       .select("*")
-      .eq("clerk_user_id", clerkUserId)
+      .eq("user_id", userId)
       .single();
 
     if (error) {
@@ -63,10 +63,10 @@ export const userProfileApi = {
     return data;
   },
 
-  async upsert(profile: Partial<UserProfile> & { clerk_user_id: string }): Promise<UserProfile | null> {
+  async upsert(profile: Partial<UserProfile> & { user_id: string }): Promise<UserProfile | null> {
     const { data, error } = await supabase
       .from("user_profiles")
-      .upsert(profile, { onConflict: "clerk_user_id" })
+      .upsert(profile, { onConflict: "user_id" })
       .select()
       .single();
 
@@ -77,11 +77,11 @@ export const userProfileApi = {
     return data;
   },
 
-  async updateOnboardingStatus(clerkUserId: string, completed: boolean): Promise<boolean> {
+  async updateOnboardingStatus(userId: string, completed: boolean): Promise<boolean> {
     const { error } = await supabase
       .from("user_profiles")
       .update({ onboarding_completed: completed, updated_at: new Date().toISOString() })
-      .eq("clerk_user_id", clerkUserId);
+      .eq("user_id", userId);
 
     if (error) {
       console.error("Error updating onboarding status:", error);

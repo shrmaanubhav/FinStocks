@@ -4,9 +4,7 @@ import { useSidebar } from "@/context/SidebarContext";
 import AppHeader from "@/layout/AppHeader";
 import AppSidebar from "@/layout/AppSidebar";
 import Backdrop from "@/layout/Backdrop";
-import React, { useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+import React from "react";
 
 export default function AdminLayout({
   children,
@@ -14,28 +12,6 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
-  const { isSignedIn, isLoaded } = useUser();
-  const router = useRouter();
-
-  // Redirect to sign-in if not authenticated
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      router.push('/signin');
-    }
-  }, [isLoaded, isSignedIn, router]);
-
-  // Show loading or redirect while checking authentication
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-brand-500"></div>
-      </div>
-    );
-  }
-
-  if (!isSignedIn) {
-    return null; // Will redirect via useEffect
-  }
 
   // Dynamic class for main content margin based on sidebar state
   const mainContentMargin = isMobileOpen
