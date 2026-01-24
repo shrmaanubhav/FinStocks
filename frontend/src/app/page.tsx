@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import LoadingScreen from "./loading-screen";
+import { MacbookScroll } from "@/components/ui/macbook-scroll";
 
 export default function LandingPage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -83,7 +84,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-4">
               <Link
                 href="/dashboard"
-                className="px-5 py-2.5 rounded-xl border border-[2px]  text-white font-medium transition-all duration-300 hover:shadow-sm hover:shadow-brand-500/25"
+                className="px-5 py-2.5 rounded-xl border  text-white font-medium transition-all duration-300 hover:shadow-sm hover:bg-brand-500/25"
               >
                 Dashboard
               </Link>
@@ -96,12 +97,12 @@ export default function LandingPage() {
       <main className={`relative z-10 transition-all duration-700 ease-out ${
         heroRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}>
-        <div className="max-w-7xl mx-auto px-6 pt-20 pb-32">
+        <div className="max-w-7xl mx-auto px-6 pt-20 pb-12">
           <div className="text-center max-w-4xl mx-auto">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm mb-8">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-sm text-gray-300">AI-Powered Financial Intelligence for India</span>
+              <span className="text-sm text-gray-300">AI-Powered Financial Intelligence for Worldwide stocks</span>
             </div>
 
             {/* Main Heading */}
@@ -147,23 +148,35 @@ export default function LandingPage() {
             </div>
       
           </div>
-
-          {/* Feature Cards */}
           
-
-          {/* Trust Banner */}
-          <div className="mt-32 text-center">
-            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <span>
-                <strong>Important:</strong> FinStocks provides intelligence and summaries only. We do not offer personalized buy/sell investment advice.
-              </span>
-            </div>
-          </div>
         </div>
       </main>
+
+      {/* MacBook Scroll Section */}
+      <section className={`relative overflow-hidden transition-all duration-700 ease-out ${
+        featuresRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}>
+        <MacbookScroll
+          title={
+            <div className="text-center">
+              <h2 className="text-4xl md:text-6xl font-bold text-white mb-4">
+                Portfolio Doctor Dashboard
+              </h2>
+              <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto">
+                Transparent health scores with diversification analysis,
+                volatility tracking, overlap detection, and smart cash exposure recommendations
+              </p>
+            </div>
+          }
+          badge={
+            <span className="px-4 py-2 rounded-full bg-brand-500/20 text-brand-400 text-sm font-medium border border-brand-500/30">
+              AI-Powered Intelligence
+            </span>
+          }
+          src="/dashboard-preview.png"
+          showGradient={true}
+        />
+      </section>
 
       {/* Footer */}
       <footer className={`relative z-10 border-t border-white/5 transition-all duration-700 ease-out ${

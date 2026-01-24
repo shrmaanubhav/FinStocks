@@ -28,31 +28,16 @@ export default function AuthLayout({
               <GridShape />
               <div className="flex flex-col items-center max-w-md px-8">
                 <Link href="/" className="flex items-center gap-3 mb-6">
-                  <svg
-                    width="56"
-                    height="56"
-                    viewBox="0 0 56 56"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="shrink-0"
-                  >
-                    <rect width="56" height="56" rx="12" fill="url(#finStocksGradientAuth)" />
-                    <path
-                      d="M16 40V16H32V22H22V26H30V32H22V40H16Z"
-                      fill="white"
-                    />
-                    <circle cx="36" cy="34" r="6" stroke="white" strokeWidth="2.5" fill="none" />
-                    <path d="M36 28V34H42" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-                    <defs>
-                      <linearGradient id="finStocksGradientAuth" x1="0" y1="0" x2="56" y2="56">
-                        <stop stopColor="#22c55e" />
-                        <stop offset="1" stopColor="#059669" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  <span className="text-3xl font-bold text-white">
-                    Fin<span className="text-brand-400">Stocks</span>
-                  </span>
+                  <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl  border border-2 flex items-center justify-center">
+                <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </div>
+              <span className="text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                FinStocks
+              </span>
+            </div>
                 </Link>
               </div>
             </div>
