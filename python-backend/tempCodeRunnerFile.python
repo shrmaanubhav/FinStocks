@@ -1,0 +1,6 @@
+# age to days converrter
+
+print("Welcome to age to days conerter")
+age = int(input("Enter your age : "))
+age_to_days = age * 365
+print('Total days you have lived' ,  str('age_to_days') + age) 
