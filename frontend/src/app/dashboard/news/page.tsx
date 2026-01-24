@@ -99,7 +99,7 @@ export default function NewsPage() {
             ),
           );
         }
-        console.log("stockSymbols:", stockSymbols);
+        // console.log("stockSymbols:", stockSymbols);
 
         // Fallback to default stocks if no portfolio
         if (stockSymbols.length === 0) {
