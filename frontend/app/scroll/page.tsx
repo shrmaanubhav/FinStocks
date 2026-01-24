@@ -3,8 +3,5 @@ import { div } from "framer-motion/client";
 import { Badge } from "lucide-react";
 
 export default function AboutPage() {
-  return (
-    <div>hi</div>
-  );
+  return <div>hi</div>;
 }
-
