@@ -110,7 +110,7 @@ export default function LandingPage() {
                 Your Portfolio&apos;s
               </span>
               <br />
-              <span className="bg-gradient-to-r from-brand-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
                 Medical Report
               </span>
             </h1>
@@ -118,7 +118,7 @@ export default function LandingPage() {
             {/* Subheading */}
             <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
               Get a complete health check of your investments with AI-driven insights, 
-              <span className="text-emerald-400"> Hinglish news updates</span>, and 
+              <span className="text-blue-400">News updates</span>, and 
               personalized portfolio analysis for Indian retail investors.
             </p>
 
@@ -145,76 +145,11 @@ export default function LandingPage() {
                 Sign In
               </Link>
             </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
-              {[
-                { value: "50K+", label: "Portfolios Analyzed" },
-                { value: "98%", label: "Accuracy Score" },
-                { value: "₹2Cr+", label: "Assets Tracked" },
-              ].map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-                    {stat.value}
-                  </div>
-                  <div className="text-sm text-gray-500 mt-1">{stat.label}</div>
-                </div>
-              ))}
-            </div>
+      
           </div>
 
           {/* Feature Cards */}
-          <div id="features" className={`mt-32 grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-700 ease-out ${
-            featuresRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
-          }`}>
-            {/* AI Analysis Card */}
-            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 backdrop-blur-xl hover:border-brand-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-brand-500/10">
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-brand-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="relative">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-3">AI Analysis</h3>
-                <p className="text-gray-400 leading-relaxed">
-                  Get a comprehensive health score with insights on diversification, volatility, overlap, and cash exposure.
-                </p>
-              </div>
-            </div>
-
-            {/* Hinglish News Card */}
-            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 backdrop-blur-xl hover:border-purple-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/10">
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="relative">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-3">Hinglish News Feed</h3>
-                <p className="text-gray-400 leading-relaxed">
-                  Real-time market updates in Hinglish, filtered specifically for your holdings. No noise, just relevance.
-                </p>
-              </div>
-            </div>
-
-            {/* Smart Upload Card */}
-            <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 backdrop-blur-xl hover:border-emerald-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/10">
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="relative">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-3">Smart PDF Upload</h3>
-                <p className="text-gray-400 leading-relaxed">
-                  Upload your bank or demat statements. Our AI extracts and analyzes your portfolio automatically.
-                </p>
-              </div>
-            </div>
-          </div>
+          
 
           {/* Trust Banner */}
           <div className="mt-32 text-center">
