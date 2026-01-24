@@ -74,14 +74,6 @@ const othersItems: NavItem[] = [
     name: "Upload Statement",
     path: "/dashboard/upload",
   },
-  {
-    icon: <PieChartIcon />,
-    name: "Analytics",
-    subItems: [
-      { name: "Sector Analysis", path: "/dashboard/sector-analysis", pro: false },
-      { name: "Performance", path: "/dashboard/performance", pro: false },
-    ],
-  },
 ];
 
 const AppSidebar: React.FC = () => {

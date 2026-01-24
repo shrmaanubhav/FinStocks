@@ -6,6 +6,7 @@ import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
 import RiskSignals from "@/components/dashboard/RiskSignals";
 import SafetyDisclaimer from "@/components/dashboard/SafetyDisclaimer";
 import WelcomeHeader from "@/components/dashboard/WelcomeHeader";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Dashboard | FinStocks - AI-Powered Portfolio Intelligence",
@@ -29,7 +30,9 @@ export default function Dashboard() {
 
         {/* Hinglish News Feed */}
         <div className="col-span-12 xl:col-span-5">
+          <Link href="/dashboard/news">
           <HinglishNewsFeed />
+          </Link>
         </div>
       </div>
       <SafetyDisclaimer />
