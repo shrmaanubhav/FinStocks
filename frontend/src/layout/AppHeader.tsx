@@ -3,7 +3,6 @@ import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import NotificationDropdown from "@/components/header/NotificationDropdown";
 import UserDropdown from "@/components/header/UserDropdown";
 import { useSidebar } from "@/context/SidebarContext";
-import Image from "next/image";
 import Link from "next/link";
 import React, { useState ,useEffect,useRef} from "react";
 
@@ -83,21 +82,32 @@ const AppHeader: React.FC = () => {
             {/* Cross Icon */}
           </button>
 
-          <Link href="/" className="lg:hidden">
-            <Image
-              width={154}
-              height={32}
-              className="dark:hidden"
-              src="./images/logo/logo.svg"
-              alt="Logo"
-            />
-            <Image
-              width={154}
-              height={32}
-              className="hidden dark:block"
-              src="./images/logo/logo-dark.svg"
-              alt="Logo"
-            />
+          <Link href="/" className="lg:hidden flex items-center gap-2">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 40 40"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="shrink-0"
+            >
+              <rect width="40" height="40" rx="8" fill="url(#finStocksGradientHeader)" />
+              <path
+                d="M12 28V12H24V16H16V18H22V22H16V28H12Z"
+                fill="white"
+              />
+              <circle cx="26" cy="24" r="4" stroke="white" strokeWidth="2" fill="none" />
+              <path d="M26 20V24H30" stroke="white" strokeWidth="2" strokeLinecap="round" />
+              <defs>
+                <linearGradient id="finStocksGradientHeader" x1="0" y1="0" x2="40" y2="40">
+                  <stop stopColor="#22c55e" />
+                  <stop offset="1" stopColor="#059669" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <span className="text-lg font-bold text-gray-900 dark:text-white">
+              Fin<span className="text-green-500">Stocks</span>
+            </span>
           </Link>
 
           <button

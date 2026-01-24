@@ -1,0 +1,445 @@
+"""
+FinStocks FastAPI Backend
+Handles all business logic, PDF parsing, LLM integrations, and data processing
+"""
+
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List, Optional, Dict, Any
+import os
+from dotenv import load_dotenv
+import json
+from datetime import datetime
+import uuid
+
+load_dotenv()
+
+app = FastAPI(
+    title="FinStocks API",
+    description="AI-powered financial intelligence for Indian retail investors",
+    version="1.0.0"
+)
+
+# CORS configuration for frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        os.environ.get("FRONTEND_URL", "http://localhost:3000")
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# ============== Pydantic Models ==============
+
+class PersonalInfo(BaseModel):
+    name: str
+    age: str
+    pan: str
+    phone: str
+
+
+class FinancialInfo(BaseModel):
+    address: str
+    income: str
+    expenditure: str
+    maritalStatus: str
+    children: str
+
+
+class StockHolding(BaseModel):
+    symbol: str
+    quantity: str
+
+
+class OnboardingRequest(BaseModel):
+    userId: str
+    personalInfo: PersonalInfo
+    financialInfo: FinancialInfo
+    lifestyle: str
+    stocks: Optional[List[StockHolding]] = None
+
+
+class HealthFactor(BaseModel):
+    name: str
+    score: int
+    max_score: int
+    status: str  # excellent, good, warning, critical
+    description: str
+
+
+class PortfolioHealthResponse(BaseModel):
+    overall_score: int
+    factors: List[HealthFactor]
+    last_updated: str
+
+
+class NewsItem(BaseModel):
+    id: str
+    title: str
+    hinglish_summary: str
+    related_stock: str
+    sentiment: str  # positive, negative, neutral
+    source: str
+    time_ago: str
+    impact: str  # high, medium, low
+
+
+class HinglishNewsResponse(BaseModel):
+    news: List[NewsItem]
+
+
+class RiskSignal(BaseModel):
+    id: str
+    type: str  # concentration, overlap, volatility, sector, liquidity
+    severity: str  # high, medium, low
+    title: str
+    description: str
+    affected_stocks: List[str]
+    recommendation: str
+
+
+class RiskSignalsResponse(BaseModel):
+    signals: List[RiskSignal]
+
+
+class PDFParseResponse(BaseModel):
+    success: bool
+    holdings: List[Dict[str, Any]]
+    source_type: str  # demat, bank, broker
+    parsed_date: str
+
+
+# ============== In-Memory Storage (Replace with Supabase in production) ==============
+
+users_db: Dict[str, Dict] = {}
+holdings_db: Dict[str, List[Dict]] = {}
+
+
+# ============== API Endpoints ==============
+
+@app.get("/")
+async def root():
+    return {
+        "message": "FinStocks API",
+        "version": "1.0.0",
+        "status": "healthy"
+    }
+
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
+
+# ---------- Onboarding Endpoints ----------
+
+@app.post("/api/onboarding")
+async def submit_onboarding(data: OnboardingRequest):
+    """Submit user onboarding data"""
+    try:
+        # Store user data
+        users_db[data.userId] = {
+            "personal_info": data.personalInfo.dict(),
+            "financial_info": data.financialInfo.dict(),
+            "lifestyle": data.lifestyle,
+            "onboarded_at": datetime.now().isoformat()
+        }
+        
+        # Store holdings if provided
+        if data.stocks:
+            holdings_db[data.userId] = [
+                {"symbol": s.symbol.upper(), "quantity": int(s.quantity), "source": "manual"}
+                for s in data.stocks if s.symbol and s.quantity
+            ]
+        
+        return {"success": True, "userId": data.userId}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/onboarding/upload-pdf")
+async def upload_pdf(
+    userId: str = Form(...),
+    file: UploadFile = File(...)
+):
+    """Upload and parse a PDF statement (bank/demat)"""
+    try:
+        if not file.filename.endswith('.pdf'):
+            raise HTTPException(status_code=400, detail="Only PDF files are accepted")
+        
+        # Read file content
+        content = await file.read()
+        
+        # TODO: Implement actual PDF parsing using PyPDF2 or pdfplumber
+        # For now, return mock data
+        mock_holdings = [
+            {"symbol": "RELIANCE", "quantity": 50, "name": "Reliance Industries Ltd"},
+            {"symbol": "TCS", "quantity": 30, "name": "Tata Consultancy Services"},
+            {"symbol": "HDFCBANK", "quantity": 80, "name": "HDFC Bank Ltd"},
+            {"symbol": "INFY", "quantity": 60, "name": "Infosys Ltd"},
+        ]
+        
+        # Store holdings
+        holdings_db[userId] = [
+            {"symbol": h["symbol"], "quantity": h["quantity"], "source": "pdf_upload"}
+            for h in mock_holdings
+        ]
+        
+        return PDFParseResponse(
+            success=True,
+            holdings=mock_holdings,
+            source_type="demat",
+            parsed_date=datetime.now().isoformat()
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------- Portfolio Endpoints ----------
+
+@app.get("/api/portfolio/health", response_model=PortfolioHealthResponse)
+async def get_portfolio_health(userId: str):
+    """Get portfolio health score and analysis"""
+    
+    # TODO: Implement actual analysis using LangGraph pipeline
+    # For now, return mock data
+    
+    factors = [
+        HealthFactor(
+            name="Diversification",
+            score=18,
+            max_score=25,
+            status="good",
+            description="Your portfolio spans 6 sectors. Consider adding more exposure to healthcare and consumer goods."
+        ),
+        HealthFactor(
+            name="Volatility",
+            score=15,
+            max_score=25,
+            status="warning",
+            description="High exposure to volatile mid-caps. 35% of holdings show beta > 1.5"
+        ),
+        HealthFactor(
+            name="Overlap",
+            score=22,
+            max_score=25,
+            status="excellent",
+            description="Minimal duplicate holdings across your mutual funds and direct equity."
+        ),
+        HealthFactor(
+            name="Cash Exposure",
+            score=17,
+            max_score=25,
+            status="good",
+            description="12% cash allocation. Slightly high for current market conditions."
+        ),
+    ]
+    
+    overall = sum(f.score for f in factors)
+    
+    return PortfolioHealthResponse(
+        overall_score=overall,
+        factors=factors,
+        last_updated="2 hours ago"
+    )
+
+
+@app.get("/api/portfolio/risks", response_model=RiskSignalsResponse)
+async def get_risk_signals(userId: str):
+    """Get risk signals and warnings"""
+    
+    signals = [
+        RiskSignal(
+            id="1",
+            type="concentration",
+            severity="high",
+            title="High Single-Stock Concentration",
+            description="HDFCBANK represents 10.4% of your portfolio, which is above the recommended 8% threshold for individual stocks.",
+            affected_stocks=["HDFCBANK"],
+            recommendation="Consider reducing position size or adding more diversified holdings."
+        ),
+        RiskSignal(
+            id="2",
+            type="overlap",
+            severity="medium",
+            title="Duplicate Holdings Detected",
+            description="RELIANCE appears in both your direct equity and 2 of your mutual funds, creating 15% effective exposure.",
+            affected_stocks=["RELIANCE"],
+            recommendation="Review your mutual fund holdings to avoid unintended concentration."
+        ),
+        RiskSignal(
+            id="3",
+            type="sector",
+            severity="medium",
+            title="Sector Overweight: Banking",
+            description="18% allocation to Banking sector. Market cap exposure is skewed towards large-cap financials.",
+            affected_stocks=["HDFCBANK", "ICICIBANK"],
+            recommendation="Consider adding exposure to other sectors like healthcare or consumer goods."
+        ),
+        RiskSignal(
+            id="4",
+            type="volatility",
+            severity="low",
+            title="High Beta Holdings",
+            description="TATAMOTORS has a beta of 1.8, contributing to overall portfolio volatility.",
+            affected_stocks=["TATAMOTORS"],
+            recommendation="If risk-averse, consider balancing with low-beta dividend stocks."
+        ),
+    ]
+    
+    return RiskSignalsResponse(signals=signals)
+
+
+@app.post("/api/portfolio/analyze", response_model=PortfolioHealthResponse)
+async def analyze_portfolio(userId: str):
+    """Trigger a new portfolio analysis"""
+    # This would typically run the LangGraph pipeline
+    return await get_portfolio_health(userId)
+
+
+# ---------- News Endpoints ----------
+
+@app.get("/api/news/hinglish", response_model=HinglishNewsResponse)
+async def get_hinglish_news(userId: str, limit: int = 10):
+    """Get Hinglish news summaries filtered for user's holdings"""
+    
+    # TODO: Implement actual news fetching and LLM summarization
+    # For now, return mock data
+    
+    news = [
+        NewsItem(
+            id="1",
+            title="Reliance Q4 Results Beat Estimates",
+            hinglish_summary="Reliance ke Q4 results expectations se zyada ache aaye hain. Jio aur retail ka growth strong raha. Stock mein short-term mein positive momentum expected hai.",
+            related_stock="RELIANCE",
+            sentiment="positive",
+            source="Economic Times",
+            time_ago="15 min ago",
+            impact="high"
+        ),
+        NewsItem(
+            id="2",
+            title="HDFC Bank's Net Interest Margin Stable",
+            hinglish_summary="HDFC Bank ka NIM stable raha hai despite competition. Deposit growth bhi theek hai. Long-term investors ke liye ye achi news hai.",
+            related_stock="HDFCBANK",
+            sentiment="neutral",
+            source="Moneycontrol",
+            time_ago="1 hour ago",
+            impact="medium"
+        ),
+        NewsItem(
+            id="3",
+            title="IT Sector Faces Headwinds",
+            hinglish_summary="IT companies ko US recession fears se dikkat ho rahi hai. TCS aur Infosys ke guidance cautious hai.",
+            related_stock="TCS",
+            sentiment="negative",
+            source="Business Standard",
+            time_ago="2 hours ago",
+            impact="high"
+        ),
+        NewsItem(
+            id="4",
+            title="Tata Motors EV Sales Surge",
+            hinglish_summary="Tata Motors ke EV sales mein 45% growth dekhi gayi. Nexon EV market leader ban gaya hai.",
+            related_stock="TATAMOTORS",
+            sentiment="positive",
+            source="LiveMint",
+            time_ago="3 hours ago",
+            impact="medium"
+        ),
+        NewsItem(
+            id="5",
+            title="RBI Policy Update",
+            hinglish_summary="RBI ne interest rates unchanged rakhe hain. Banking stocks ke liye ye neutral hai.",
+            related_stock="MARKET",
+            sentiment="neutral",
+            source="Reuters India",
+            time_ago="5 hours ago",
+            impact="high"
+        ),
+    ]
+    
+    return HinglishNewsResponse(news=news[:limit])
+
+
+@app.get("/api/news/stock/{symbol}", response_model=HinglishNewsResponse)
+async def get_stock_news(symbol: str):
+    """Get news for a specific stock"""
+    # Filter news for specific stock
+    all_news = await get_hinglish_news("", 20)
+    filtered = [n for n in all_news.news if n.related_stock.upper() == symbol.upper()]
+    return HinglishNewsResponse(news=filtered)
+
+
+# ---------- Advice & Strategy Endpoints ----------
+
+@app.get("/api/advice")
+async def get_advice(userId: str):
+    """Get AI-generated advice using LangGraph pipeline"""
+    
+    # TODO: Integrate with the existing LangGraph pipeline
+    # This would call the advice generation workflow
+    
+    return {
+        "advice": "Based on your portfolio analysis, consider rebalancing your IT sector exposure. The current allocation of 15% is slightly high given the sector headwinds. You might want to diversify into defensive sectors like FMCG or Pharma.",
+        "type": "advice"
+    }
+
+
+@app.get("/api/strategy")
+async def get_strategy(userId: str):
+    """Get strategy recommendations"""
+    
+    return {
+        "strategy": "Your portfolio shows a growth-oriented bias with high beta stocks. For your risk profile and investment horizon, consider a barbell strategy.",
+        "recommendations": [
+            "Reduce TATAMOTORS position by 30% to manage volatility",
+            "Add 5% allocation to a large-cap pharma stock like Sun Pharma",
+            "Consider SIP in a balanced advantage fund for automatic rebalancing",
+            "Maintain 10% cash for opportunistic buying during corrections"
+        ]
+    }
+
+
+# ---------- Market Data Endpoints ----------
+
+@app.get("/api/market/macro")
+async def get_macro_data():
+    """Get macro economic indicators"""
+    return {
+        "gdp_growth": "6.5%",
+        "inflation": "5.2%",
+        "repo_rate": "6.5%",
+        "fii_net": "+₹2,500 Cr",
+        "dii_net": "+₹3,200 Cr",
+        "vix": 13.5,
+        "nifty_pe": 22.8,
+        "market_sentiment": "Bullish"
+    }
+
+
+@app.get("/api/market/trends")
+async def get_trends():
+    """Get market trends"""
+    return {
+        "top_gainers": ["TATAMOTORS", "ADANIPORTS", "BAJFINANCE"],
+        "top_losers": ["INFY", "TCS", "WIPRO"],
+        "sector_performance": {
+            "IT": -1.2,
+            "Banking": 0.8,
+            "Auto": 2.5,
+            "Pharma": 0.3,
+            "FMCG": 0.1
+        }
+    }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
