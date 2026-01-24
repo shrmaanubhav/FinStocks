@@ -1,9 +1,11 @@
 "use client";
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import StockSearch from "./StockSearch";
 
 interface Holding {
   symbol: string;
+  name?: string;
   quantity: number;
   source: "manual" | "screenshot_upload";
 }
@@ -75,7 +77,7 @@ export default function OnboardingForm({ userId, userEmail, onComplete }: Onboar
     lifestyle: "",
   });
 
-  const [newHolding, setNewHolding] = useState({ symbol: "", quantity: "" });
+  const [newHolding, setNewHolding] = useState({ symbol: "", name: "", quantity: "" });
 
   const updateFormData = (field: keyof OnboardingData, value: string | Holding[]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -85,12 +87,17 @@ export default function OnboardingForm({ userId, userEmail, onComplete }: Onboar
     if (newHolding.symbol && newHolding.quantity) {
       const holding: Holding = {
         symbol: newHolding.symbol.toUpperCase(),
+        name: newHolding.name,
         quantity: parseInt(newHolding.quantity),
         source: "manual",
       };
       updateFormData("holdings", [...formData.holdings, holding]);
-      setNewHolding({ symbol: "", quantity: "" });
+      setNewHolding({ symbol: "", name: "", quantity: "" });
     }
+  };
+
+  const handleStockSelect = (stock: { symbol: string; name: string }) => {
+    setNewHolding({ ...newHolding, symbol: stock.symbol, name: stock.name });
   };
 
   const removeHolding = (index: number) => {
@@ -381,23 +388,41 @@ export default function OnboardingForm({ userId, userEmail, onComplete }: Onboar
                     <p className="text-gray-400">Add your stock holdings for personalized insights</p>
                   </div>
 
-                  {/* Manual Stock Entry */}
+                  {/* NASDAQ Stock Search */}
                   <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
                     <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                       <svg className="w-5 h-5 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
-                      Add Stocks Manually
+                      Add NASDAQ Stocks
                     </h3>
+                    <p className="text-sm text-gray-400 mb-4">
+                      Search and select stocks listed on NASDAQ exchange
+                    </p>
                     
                     <div className="flex gap-3 mb-4">
-                      <input
-                        type="text"
-                        value={newHolding.symbol}
-                        onChange={(e) => setNewHolding({ ...newHolding, symbol: e.target.value })}
-                        className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all uppercase"
-                        placeholder="Stock Symbol (e.g., RELIANCE)"
-                      />
+                      {newHolding.symbol ? (
+                        <div className="flex-1 px-4 py-3 rounded-xl bg-brand-500/10 border border-brand-500/30 text-white flex items-center justify-between">
+                          <div>
+                            <span className="font-semibold">{newHolding.symbol}</span>
+                            <span className="text-gray-400 ml-2 text-sm">{newHolding.name}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setNewHolding({ symbol: "", name: "", quantity: newHolding.quantity })}
+                            className="text-gray-400 hover:text-white transition-colors"
+                          >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ) : (
+                        <StockSearch
+                          onSelect={handleStockSelect}
+                          placeholder="Search NASDAQ stocks (e.g., AAPL, MSFT)"
+                        />
+                      )}
                       <input
                         type="number"
                         min="1"
@@ -409,7 +434,8 @@ export default function OnboardingForm({ userId, userEmail, onComplete }: Onboar
                       <button
                         type="button"
                         onClick={addHolding}
-                        className="px-4 py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white transition-all"
+                        disabled={!newHolding.symbol || !newHolding.quantity}
+                        className="px-4 py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Add
                       </button>
@@ -417,26 +443,37 @@ export default function OnboardingForm({ userId, userEmail, onComplete }: Onboar
 
                     {/* Holdings List */}
                     {formData.holdings.length > 0 && (
-                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
                         {formData.holdings.map((holding, index) => (
                           <div
                             key={index}
-                            className="flex items-center justify-between px-4 py-2 rounded-lg bg-white/5 border border-white/5"
+                            className="flex items-center justify-between px-4 py-3 rounded-lg bg-white/5 border border-white/5"
                           >
                             <div className="flex items-center gap-3">
-                              <span className="font-medium text-white">{holding.symbol}</span>
-                              <span className="text-gray-400">×</span>
-                              <span className="text-gray-300">{holding.quantity}</span>
+                              <div className="w-10 h-10 rounded-lg bg-brand-500/20 flex items-center justify-center">
+                                <span className="text-brand-400 font-bold text-sm">
+                                  {holding.symbol.slice(0, 2)}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="font-semibold text-white">{holding.symbol}</span>
+                                {holding.name && (
+                                  <span className="block text-xs text-gray-400">{holding.name}</span>
+                                )}
+                              </div>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => removeHolding(index)}
-                              className="text-red-400 hover:text-red-300 transition-colors"
-                            >
-                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
+                            <div className="flex items-center gap-4">
+                              <span className="text-gray-300 font-medium">{holding.quantity} shares</span>
+                              <button
+                                type="button"
+                                onClick={() => removeHolding(index)}
+                                className="text-red-400 hover:text-red-300 transition-colors"
+                              >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
                           </div>
                         ))}
                       </div>

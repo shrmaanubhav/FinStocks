@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useUser } from "@/context/UserContext";
 import { Holding } from "@/context/UserContext";
 
@@ -8,6 +8,8 @@ interface StockData extends Holding {
   changePercent?: number;
   value?: number;
   dayChange?: number;
+  dayHigh?: number;
+  dayLow?: number;
 }
 
 export default function StockHoldings() {
@@ -16,20 +18,13 @@ export default function StockHoldings() {
   const [stocksLoading, setStocksLoading] = useState(true);
   const [totalValue, setTotalValue] = useState(0);
   const [totalChange, setTotalChange] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  useEffect(() => {
-    if (userProfile?.holdings && userProfile.holdings.length > 0) {
-      fetchStockData(userProfile.holdings);
-    } else {
-      setStocksLoading(false);
-    }
-  }, [userProfile]);
-
-  const fetchStockData = async (holdings: Holding[]) => {
+  const fetchStockData = useCallback(async (holdings: Holding[]) => {
     try {
       setStocksLoading(true);
       
-      // Fetch stock data from API
+      // Fetch live stock data from Yahoo Finance API
       const response = await fetch("/api/stocks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -41,18 +36,21 @@ export default function StockHoldings() {
       if (response.ok) {
         const data = await response.json();
         const enrichedStocks = holdings.map((holding) => {
-          const stockInfo = data.stocks.find((s: any) => s.symbol === holding.symbol);
+          const stockInfo = data.stocks.find((s: any) => s.symbol?.toUpperCase() === holding.symbol?.toUpperCase());
           return {
             ...holding,
-            name: stockInfo?.name || holding.symbol,
+            name: stockInfo?.name || holding.name || holding.symbol,
             currentPrice: stockInfo?.currentPrice || 0,
             changePercent: stockInfo?.changePercent || 0,
             value: (holding.quantity || 0) * (stockInfo?.currentPrice || 0),
             dayChange: (holding.quantity || 0) * (stockInfo?.dayChange || 0),
+            dayHigh: stockInfo?.dayHigh || 0,
+            dayLow: stockInfo?.dayLow || 0,
           };
         });
 
         setStocks(enrichedStocks);
+        setLastUpdated(new Date());
 
         // Calculate totals
         const total = enrichedStocks.reduce((sum, stock) => sum + (stock.value || 0), 0);
@@ -65,15 +63,29 @@ export default function StockHoldings() {
       console.error("Failed to fetch stock data:", error);
       // Use holdings as fallback without real-time data
       setStocks(
-        userProfile?.holdings.map((h) => ({
+        holdings.map((h) => ({
           ...h,
           name: h.name || h.symbol,
           value: 0,
           changePercent: 0,
-        })) || []
+        }))
       );
     } finally {
       setStocksLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userProfile?.holdings && userProfile.holdings.length > 0) {
+      fetchStockData(userProfile.holdings);
+    } else {
+      setStocksLoading(false);
+    }
+  }, [userProfile, fetchStockData]);
+
+  const handleRefresh = () => {
+    if (userProfile?.holdings && userProfile.holdings.length > 0) {
+      fetchStockData(userProfile.holdings);
     }
   };
 
@@ -111,9 +123,43 @@ export default function StockHoldings() {
     <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-dark p-6 md:p-8">
       {/* Header */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-          Your Holdings
-        </h2>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Your Holdings
+            </h2>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs px-2 py-0.5 rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                NASDAQ
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                Live prices via Yahoo Finance
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {lastUpdated && (
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                Updated: {lastUpdated.toLocaleTimeString()}
+              </span>
+            )}
+            <button
+              onClick={handleRefresh}
+              disabled={stocksLoading}
+              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+              title="Refresh prices"
+            >
+              <svg
+                className={`w-5 h-5 text-gray-600 dark:text-gray-400 ${stocksLoading ? 'animate-spin' : ''}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
+        </div>
 
         {/* Portfolio Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -122,7 +168,7 @@ export default function StockHoldings() {
               Total Value
             </p>
             <p className="text-2xl font-bold text-blue-900 dark:text-blue-200">
-              ₹{totalValue.toFixed(2)}
+              ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
           </div>
 
@@ -136,14 +182,14 @@ export default function StockHoldings() {
                 ? "text-green-600 dark:text-green-400"
                 : "text-red-600 dark:text-red-400"
             }`}>
-              Today's Change
+              Today&apos;s Change
             </p>
             <p className={`text-2xl font-bold ${
               totalChange >= 0
                 ? "text-green-900 dark:text-green-200"
                 : "text-red-900 dark:text-red-200"
             }`}>
-              ₹{totalChange.toFixed(2)}
+              {totalChange >= 0 ? '+' : ''}${totalChange.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
           </div>
 
@@ -152,7 +198,7 @@ export default function StockHoldings() {
               Total Holdings
             </p>
             <p className="text-2xl font-bold text-purple-900 dark:text-purple-200">
-              {stocks.length}
+              {stocks.length} stocks
             </p>
           </div>
         </div>
@@ -167,16 +213,16 @@ export default function StockHoldings() {
                 Stock
               </th>
               <th className="text-right py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
-                Quantity
+                Shares
               </th>
               <th className="text-right py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
-                Current Price
+                Price (USD)
               </th>
               <th className="text-right py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
-                Value
+                Value (USD)
               </th>
               <th className="text-right py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">
-                Change %
+                Change
               </th>
             </tr>
           </thead>
@@ -187,23 +233,30 @@ export default function StockHoldings() {
                 className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
               >
                 <td className="py-4 px-4">
-                  <div>
-                    <p className="font-semibold text-gray-900 dark:text-white">
-                      {stock.symbol}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {stock.name}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-500/20 to-purple-500/20 flex items-center justify-center">
+                      <span className="text-brand-600 dark:text-brand-400 font-bold text-sm">
+                        {stock.symbol?.slice(0, 2)}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-white">
+                        {stock.symbol}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 max-w-[200px] truncate">
+                        {stock.name}
+                      </p>
+                    </div>
                   </div>
                 </td>
-                <td className="py-4 px-4 text-right text-gray-700 dark:text-gray-300">
+                <td className="py-4 px-4 text-right text-gray-700 dark:text-gray-300 font-medium">
                   {stock.quantity}
                 </td>
                 <td className="py-4 px-4 text-right text-gray-700 dark:text-gray-300">
-                  ₹{(stock.currentPrice || 0).toFixed(2)}
+                  ${(stock.currentPrice || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </td>
                 <td className="py-4 px-4 text-right font-semibold text-gray-900 dark:text-white">
-                  ₹{(stock.value || 0).toFixed(2)}
+                  ${(stock.value || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </td>
                 <td className="py-4 px-4 text-right">
                   <span
@@ -213,8 +266,7 @@ export default function StockHoldings() {
                         : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                     }`}
                   >
-                    {(stock.changePercent || 0) >= 0 ? "+" : ""}
-                    {(stock.changePercent || 0).toFixed(2)}%
+                    {(stock.changePercent || 0) >= 0 ? "▲" : "▼"} {Math.abs(stock.changePercent || 0).toFixed(2)}%
                   </span>
                 </td>
               </tr>
