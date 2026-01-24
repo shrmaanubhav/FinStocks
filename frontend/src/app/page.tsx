@@ -95,7 +95,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-4">
               <Link
                 href="/dashboard"
-                className="px-5 py-2.5 rounded-xl border  text-white font-medium transition-all duration-300 hover:shadow-sm hover:bg-brand-500/25"
+                className="px-5 py-2.5 rounded-xl border  text-white/90 font-medium transition-all duration-300 hover:shadow-sm hover:bg-brand-500/25"
               >
                 Dashboard
               </Link>
@@ -108,7 +108,7 @@ export default function LandingPage() {
       <main className={`relative z-10 transition-all duration-700 ease-out ${
         heroRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}>
-        <div className="max-w-7xl mx-auto px-6 pt-20 pb-10">
+        <div className="max-w-7xl mx-auto px-6 pt-30 pb-10">
           <div className="text-center max-w-4xl mx-auto">
             {/* Badge */}
             <motion.div 
@@ -191,7 +191,7 @@ export default function LandingPage() {
                 </Link>
               </motion.div>
               <motion.div
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.05, y: -5 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >

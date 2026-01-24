@@ -62,6 +62,11 @@ const navItems: NavItem[] = [
     path: "/dashboard/advice",
   },
   {
+    icon:<HorizontaLDots/>,
+    name: " Strategy",
+    path: "/dashboard/strategy"
+  },
+  {
     icon: <NewsIcon />,
     name: "News Feed",
     path: "/dashboard/news",
