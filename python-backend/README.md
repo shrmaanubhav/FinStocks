@@ -77,6 +77,11 @@ docker run --rm -p 8501:8501 --env-file python-backend/.env python-backend:lates
    - If you prefer mounting the `.env` at runtime instead of using `--env-file`, you can mount the file into the container: `-v $(pwd)/python-backend/.env:/app/.env`.
    - The app listens on port `8501` inside the container.
 
+## Run Server
+- After activating the venv in another terminal run the below command
+```
+flask --app server run
+```
 ## Notes
 - Make sure your API keys are valid and have sufficient quota.
 - The app uses LLMs, so internet access is required.
