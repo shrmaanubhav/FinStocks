@@ -166,6 +166,8 @@ elif "usage" in st.session_state and st.session_state.usage == "advice":
             st.code(state['market_news'])
 
             try:
+                # print(state)
+                
                 state = market_trends(state)
 
                 st.markdown("### 🔍 Market Trends")
