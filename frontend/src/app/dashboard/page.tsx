@@ -35,7 +35,7 @@ export default function Dashboard() {
           </Link>
         </div>
       </div>
-      <SafetyDisclaimer />
+      {/* <SafetyDisclaimer /> */}
     </div>
   );
 }
