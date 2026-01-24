@@ -26,7 +26,19 @@ export interface IUserProfile extends Document {
   maritalStatus: string;
   children: number;
   
-  // Investment Information (Slide 3)
+  // Investor Profile (Slide 3)
+  jobType?: string;
+  job?: string;
+  monthlyIncome?: number | null;
+  sideIncome?: number | null;
+  investmentGoal?: string;
+  investmentDuration?: string;
+  riskPreference?: number | null;
+  investingYears?: number | null;
+  retirementAge?: number | null;
+  stocks?: string[];
+
+  // Investment Information (Slide 4)
   holdings: {
     symbol: string;
     quantity: number;
@@ -116,7 +128,63 @@ const UserProfileSchema = new Schema<IUserProfile>(
       min: 0,
     },
     
-    // Investment Information (Slide 3)
+    // Investor Profile (Slide 3)
+    jobType: {
+      type: String,
+      enum: ["private", "government", "semi private", "non profit", "business", ""],
+      default: "",
+      trim: true,
+    },
+    job: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    monthlyIncome: {
+      type: Number,
+      min: 0,
+      default: null,
+    },
+    sideIncome: {
+      type: Number,
+      min: 0,
+      default: null,
+    },
+    investmentGoal: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    investmentDuration: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    riskPreference: {
+      type: Number,
+      min: 0,
+      max: 1,
+      default: null,
+    },
+    investingYears: {
+      type: Number,
+      min: 0,
+      default: null,
+    },
+    retirementAge: {
+      type: Number,
+      min: 0,
+      default: null,
+    },
+    stocks: [
+      {
+        type: String,
+        trim: true,
+        uppercase: true,
+      },
+    ],
+
+    // Investment Information (Slide 4)
     holdings: [
       {
         symbol: {
