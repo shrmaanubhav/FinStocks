@@ -7,6 +7,8 @@ from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
+import yfinance as yf
+import pandas as pd
 import os
 from dotenv import load_dotenv
 import json
@@ -115,6 +117,10 @@ class PDFParseResponse(BaseModel):
     parsed_date: str
 
 
+class StocksRequest(BaseModel):
+    stocks: List[str]
+
+
 # ============== In-Memory Storage (Replace with Supabase in production) ==============
 
 users_db: Dict[str, Dict] = {}
@@ -144,6 +150,7 @@ async def submit_onboarding(data: OnboardingRequest):
     """Submit user onboarding data"""
     try:
         # Store user data
+        
         users_db[data.userId] = {
             "personal_info": data.personalInfo.dict(),
             "financial_info": data.financialInfo.dict(),
@@ -199,6 +206,41 @@ async def upload_pdf(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---- Stocks Data Endpoints ----
+
+@app.post("/api/myStocks")
+async def stock_data(payload: StocksRequest):
+    print('\n', "Gathering the stock data of stocks.\n")
+
+    stocks = [s.strip().upper() for s in payload.stocks if s and s.strip()]
+    if not stocks:
+        raise HTTPException(status_code=400, detail="stocks must be a non-empty array of symbols")
+
+    stock_data_map: Dict[str, Any] = {}
+
+    for stock in stocks:
+        try:
+            df = yf.download(stock, period="1y", interval="1wk", progress=False)
+            if df.empty:
+                stock_data_map[stock] = {"error": {"message": "No data returned"}}
+                continue
+
+            df.dropna(inplace=True)
+
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = df.columns.get_level_values(0)
+
+            df.reset_index(inplace=True)
+            if "Date" in df.columns:
+                df["Date"] = df["Date"].dt.strftime("%Y-%m-%d")
+
+            stock_data_map[stock] = df.to_dict(orient="records")
+        except Exception as e:
+            stock_data_map[stock] = {"error": {"message": str(e)}}
+
+    return {"stocks": stock_data_map}
 
 
 # ---------- Portfolio Endpoints ----------
