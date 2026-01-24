@@ -15,6 +15,7 @@ import json
 from datetime import datetime
 import uuid
 from services.portfolio import portfolio_summary_from_form, portfolio_summariser
+from services.news import news_extractor
 from classes import UsageClassfier
 
 load_dotenv()
