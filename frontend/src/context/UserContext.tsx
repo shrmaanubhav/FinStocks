@@ -85,8 +85,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   // Check localStorage for user session on mount
   useEffect(() => {
-    const storedUserId = localStorage.getItem("finstock_user_id");
-    const storedUserEmail = localStorage.getItem("finstock_user_email");
+    const storedUserId = localStorage.getItem("user_id");
+    const storedUserEmail = localStorage.getItem("user_email");
     const storedOnboarding = localStorage.getItem("finstock_onboarding_completed");
     
     if (storedUserId) {
@@ -163,8 +163,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.removeItem("finstock_user_id");
-    localStorage.removeItem("finstock_user_email");
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("user_email");
     localStorage.removeItem("finstock_onboarding_completed");
     setUserId(null);
     setUserEmail(null);

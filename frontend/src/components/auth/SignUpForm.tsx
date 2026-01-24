@@ -49,8 +49,8 @@ export default function SignUpForm() {
         throw new Error(data.error || "Failed to sign up");
       }
 
-      localStorage.setItem("finstock_user_id", data.user.id);
-      localStorage.setItem("finstock_user_email", data.user.email);
+      localStorage.setItem("user_id", data.user.id);
+      localStorage.setItem("user_email", data.user.email);
 
       setUserId(data.user.id);
       setShowOnboarding(true);
