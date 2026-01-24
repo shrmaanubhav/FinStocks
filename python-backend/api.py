@@ -5,7 +5,7 @@ Handles all business logic, PDF parsing, LLM integrations, and data processing
 
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 import yfinance as yf
 import pandas as pd
@@ -14,6 +14,8 @@ from dotenv import load_dotenv
 import json
 from datetime import datetime
 import uuid
+from services.portfolio import portfolio_summary_from_form, portfolio_summariser
+from classes import UsageClassfier
 
 load_dotenv()
 
@@ -119,6 +121,33 @@ class PDFParseResponse(BaseModel):
 
 class StocksRequest(BaseModel):
     stocks: List[str]
+
+
+class PortfolioAnalyzeRequest(BaseModel):
+    name: Optional[str] = ""
+    age: Optional[int] = None
+    phone: Optional[str] = ""
+    address: Optional[str] = ""
+    incomeRange: Optional[str] = ""
+    expenditureRange: Optional[str] = ""
+    maritalStatus: Optional[str] = ""
+    children: Optional[int] = None
+    holdings: List[Dict[str, Any]] = Field(default_factory=list)
+    lifestyle: Optional[str] = ""
+    onboardingCompleted: Optional[bool] = None
+    createdAt: Optional[Dict[str, Any]] = None
+    updatedAt: Optional[Dict[str, Any]] = None
+    job_type: Optional[str] = ""
+    job: Optional[str] = ""
+    monthly_income: Optional[float] = None
+    side_income: Optional[float] = None
+    investment_goal: Optional[str] = ""
+    investment_duration: Optional[str] = ""
+    risk_preference: Optional[float] = None
+    investing_years: Optional[int] = None
+    retirement_age: Optional[int] = None
+    martial_status: Optional[str] = ""
+    stocks: List[str] = Field(default_factory=list)
 
 
 # ============== In-Memory Storage (Replace with Supabase in production) ==============
@@ -338,11 +367,36 @@ async def get_risk_signals(userId: str):
     return RiskSignalsResponse(signals=signals)
 
 
-@app.post("/api/portfolio/analyze", response_model=PortfolioHealthResponse)
-async def analyze_portfolio(userId: str):
-    """Trigger a new portfolio analysis"""
-    # This would typically run the LangGraph pipeline
-    return await get_portfolio_health(userId)
+@app.post("/api/portfolio/analyze")
+async def analyze_portfolio(payload: PortfolioAnalyzeRequest):
+    """Trigger a new portfolio analysis based on onboarding form data"""
+    try:
+        payload_data = payload.model_dump() if hasattr(payload, "model_dump") else payload.dict()
+        state = UsageClassfier(
+            user_query="",
+            usage="invalid",
+            age=payload_data.get("age"),
+            job_type=payload_data.get("job_type") or "",
+            job=payload_data.get("job") or "",
+            monthly_income=payload_data.get("monthly_income"),
+            side_income=payload_data.get("side_income"),
+            investment_goal=payload_data.get("investment_goal") or "",
+            investment_duration=payload_data.get("investment_duration") or "",
+            risk_preference=payload_data.get("risk_preference"),
+            investing_years=payload_data.get("investing_years"),
+            retirement_age=payload_data.get("retirement_age"),
+            martial_status=payload_data.get("martial_status") or payload_data.get("maritalStatus") or "",
+            children=payload_data.get("children"),
+            stocks=payload_data.get("stocks") or [],
+        )
+        summary_state = portfolio_summariser(state)
+        return {
+            "profile": payload_data,
+            "portfolio": summary_state.get("portfolio"),
+            "stocks": summary_state.get("stocks"),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ---------- News Endpoints ----------

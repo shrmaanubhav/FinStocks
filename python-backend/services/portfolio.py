@@ -1,7 +1,41 @@
+from typing import Any, Dict, List
+
 from langchain_core.messages import HumanMessage, SystemMessage
+from pydantic import BaseModel, Field
 
 from classes import AppState, UsageClassfier
 from services.clients import llm
+
+
+class PortfolioSummary(BaseModel):
+    financial_outlook: str
+    retirement_strategy: str
+    risk_assessment: str
+    key_takeaways: List[str] = Field(default_factory=list)
+
+
+def portfolio_summary_from_form(form_data: Dict[str, Any]) -> Dict[str, Any]:
+    print('\n', "Summarizing the overall portfolio from form data\n")
+
+    prompt = """Analyze the investor profile and return a JSON summary with:
+    - financial_outlook
+    - retirement_strategy
+    - risk_assessment
+    - key_takeaways (list of short bullets)
+
+    Keep the summary concise, practical, and based only on the provided data."""
+
+    usage_llm = llm.with_structured_output(PortfolioSummary)
+    analysis = usage_llm.invoke([
+        SystemMessage(content=prompt),
+        HumanMessage(content=str(form_data)),
+    ])
+
+    analysis_data = analysis.model_dump() if hasattr(analysis, "model_dump") else analysis.dict()
+    return {
+        "profile": form_data,
+        "analysis": analysis_data,
+    }
 
 
 # Node Portfolio Builder from the user Input
