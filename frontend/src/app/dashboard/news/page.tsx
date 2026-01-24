@@ -106,13 +106,19 @@ export default function NewsPage() {
           stockSymbols = ["AAPL", "MSFT", "TSLA"];
         }
 
-        // Fetch news from API
-        const response = await fetch("http://localhost:8000/api/news", {
+        const userId = localStorage.getItem("user_id");
+        const refreshKey = userId ? `finstock_news_refresh_${userId}` : "finstock_news_refresh";
+        const refreshNeeded = localStorage.getItem(refreshKey) !== "false";
+
+        // Fetch news from cache-backed API
+        const response = await fetch("/api/news", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            userId,
             stocks: stockSymbols,
-            limit: 5,
+            limit: 3,
+            refresh: refreshNeeded,
           }),
         });
 
@@ -139,6 +145,10 @@ export default function NewsPage() {
         // Shuffle cards for variety
         const shuffledCards = cards.sort(() => Math.random() - 0.5);
         setAllCards(shuffledCards);
+
+        if (userId && refreshNeeded) {
+          localStorage.setItem(refreshKey, "false");
+        }
         
       } catch (err) {
         console.error("Error fetching news:", err);

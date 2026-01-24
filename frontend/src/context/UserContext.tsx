@@ -175,6 +175,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     if (userId) {
       localStorage.removeItem(`finstock_stock_cache_${userId}`);
+      localStorage.removeItem(`finstock_news_refresh_${userId}`);
     }
     localStorage.removeItem("finstock_stock_cache");
     localStorage.removeItem("user_id");

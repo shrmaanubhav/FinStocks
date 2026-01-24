@@ -51,6 +51,7 @@ export default function SignUpForm() {
 
       localStorage.setItem("user_id", data.user.id);
       localStorage.setItem("user_email", data.user.email);
+      localStorage.setItem(`finstock_news_refresh_${data.user.id}`, "true");
 
       setUserId(data.user.id);
       setShowOnboarding(true);
@@ -63,6 +64,9 @@ export default function SignUpForm() {
 
   const handleOnboardingComplete = () => {
     localStorage.setItem("finstock_onboarding_completed", "true");
+    if (userId) {
+      localStorage.setItem(`finstock_news_refresh_${userId}`, "true");
+    }
     router.push("/dashboard");
   };
 
