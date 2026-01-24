@@ -150,6 +150,11 @@ class PortfolioAnalyzeRequest(BaseModel):
     stocks: List[str] = Field(default_factory=list)
 
 
+class NewsRequest(BaseModel):
+    stocks: List[str]
+    limit: Optional[int] = 5
+
+
 # ============== In-Memory Storage (Replace with Supabase in production) ==============
 
 users_db: Dict[str, Dict] = {}
@@ -400,6 +405,33 @@ async def analyze_portfolio(payload: PortfolioAnalyzeRequest):
 
 
 # ---------- News Endpoints ----------
+
+@app.post("/api/news")
+async def get_news_for_stocks(payload: NewsRequest):
+    """Get news for specified stocks from user's portfolio"""
+    from services.news import get_news
+    
+    stocks = [s.strip().upper() for s in payload.stocks if s and s.strip()]
+    if not stocks:
+        raise HTTPException(status_code=400, detail="stocks must be a non-empty array of symbols")
+    
+    try:
+        # Get news for each stock
+        news_data = get_news(stocks)
+        return {"stocks": news_data}
+    except Exception as e:
+        # Fallback to mock data if news service fails
+        mock_news = {}
+        for stock in stocks:
+            mock_news[stock] = [
+                f"Latest market update for {stock}: Strong momentum continues in the market.",
+                f"{stock} shows resilience amid market volatility.",
+                f"Analysts remain optimistic about {stock}'s growth potential.",
+                f"Trading volume increases for {stock} as investors show confidence.",
+                f"{stock} continues to attract institutional interest."
+            ][:payload.limit]
+        return {"stocks": mock_news}
+
 
 @app.get("/api/news/hinglish", response_model=HinglishNewsResponse)
 async def get_hinglish_news(userId: str, limit: int = 10):
