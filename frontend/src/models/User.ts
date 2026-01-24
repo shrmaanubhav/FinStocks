@@ -30,7 +30,7 @@ export interface IUserProfile extends Document {
   holdings: {
     symbol: string;
     quantity: number;
-    source: "manual" | "screenshot_upload";
+    source: "manual" | "pdf_upload";
   }[];
   lifestyle: string;
   
@@ -132,7 +132,7 @@ const UserProfileSchema = new Schema<IUserProfile>(
         },
         source: {
           type: String,
-          enum: ["manual", "screenshot_upload"],
+          enum: ["manual", "pdf_upload"],
           default: "manual",
         },
       },

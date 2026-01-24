@@ -32,7 +32,7 @@ export interface Holding {
   changePercent?: number;
   value?: number;
   sector?: string;
-  source: "manual" | "screenshot_upload";
+  source: "manual" | "pdf_upload";
 }
 
 export interface Portfolio {

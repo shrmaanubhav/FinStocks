@@ -17,7 +17,7 @@ COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
 # Expose Streamlit default port
-EXPOSE 8501
+EXPOSE 8000
 
 # Use entrypoint which loads .env (if present) and starts Streamlit
 ENTRYPOINT ["/app/entrypoint.sh"]

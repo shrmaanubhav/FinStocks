@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import LoadingScreen from "./loading-screen";
 import { MacbookScroll } from "@/components/ui/macbook-scroll";
 
@@ -10,6 +11,7 @@ export default function LandingPage() {
   const [navRevealed, setNavRevealed] = useState(false);
   const [heroRevealed, setHeroRevealed] = useState(false);
   const [featuresRevealed, setFeaturesRevealed] = useState(false);
+  const [macbookDone, setMacbookDone] = useState(false);
   const [footerRevealed, setFooterRevealed] = useState(false);
 
   useEffect(() => {
@@ -36,6 +38,15 @@ export default function LandingPage() {
 
     return () => clearTimeout(timer);
   }, []);
+
+  // When features (Macbook) are revealed, mark macbookDone after the
+  // Macbook scroll animation finishes. This provides a fallback timer in case
+  // the MacbookScroll component doesn't call the onComplete prop.
+  useEffect(() => {
+    if (!featuresRevealed) return;
+    const t = setTimeout(() => setMacbookDone(true), 1200);
+    return () => clearTimeout(t);
+  }, [featuresRevealed]);
 
   return (
     <>
@@ -72,12 +83,12 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl  border border-2 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl border-2 flex items-center justify-center border-white/20">
                 <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+              <span className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
                 FinStocks
               </span>
             </div>
@@ -97,55 +108,101 @@ export default function LandingPage() {
       <main className={`relative z-10 transition-all duration-700 ease-out ${
         heroRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}>
-        <div className="max-w-7xl mx-auto px-6 pt-20 pb-12">
+        <div className="max-w-7xl mx-auto px-6 pt-20 pb-10">
           <div className="text-center max-w-4xl mx-auto">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm mb-8">
+            <motion.div 
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm mb-8"
+              initial={{ opacity: 0, y: -20, scale: 0.8 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+            >
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-sm text-gray-300">AI-Powered Financial Intelligence for Worldwide stocks</span>
-            </div>
+            </motion.div>
 
             {/* Main Heading */}
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-              <span className="bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
+            <motion.h1 
+              className="text-5xl md:text-7xl font-bold mb-6 "
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1.0 }}
+            >
+              <motion.span 
+                className="bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent "
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, delay: 1.1 }}
+              >
                 Your Portfolio&apos;s
-              </span>
+              </motion.span>
               <br />
-              <span className="bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
+          
+              <motion.span 
+                className="bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent bloc
+                "
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, delay: 1.3 }}
+              >
                 Medical Report
-              </span>
-            </h1>
+              </motion.span>
+            </motion.h1>
 
             {/* Subheading */}
-            <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+            <motion.p 
+              className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 1.5 }}
+            >
               Get a complete health check of your investments with AI-driven insights, 
               <span className="text-blue-400">News updates</span>, and 
               personalized portfolio analysis for Indian retail investors.
-            </p>
+            </motion.p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-              <Link
-                href="/signup"
-                className="group px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-500/20 to-purple-600/20 border-[0.2px] border-white/15 text-white  text-lg transition-all duration-300 hover:shadow-2xl hover:shadow-brand-500/30 hover:scale-105 flex items-center gap-3"
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 1.7 }}
+            >
+              <motion.div
+                whileHover={{ scale: 1.05, y: -5 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                Get Started
-                <svg 
-                  className="w-5 h-5 group-hover:translate-x-1 transition-transform" 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
-                  stroke="currentColor"
+                <Link
+                  href="/signup"
+                  className={`group px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-500/20 to-purple-600/20 border-[0.2px] border-white/15 text-white text-lg transition-all duration-500 transform ${macbookDone ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6 pointer-events-none'} inline-flex items-center gap-3`}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </Link>
-              <Link
-                href="/signin"
-                className="px-8 py-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-sm font-semibold text-lg transition-all duration-300"
+                  Get Started
+                  <motion.svg 
+                    className="w-5 h-5" 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                    animate={{ x: [0, 4, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </motion.svg>
+                </Link>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                Sign In
-              </Link>
-            </div>
+                <Link
+                  href="/signin"
+                  className="px-8 py-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-sm font-semibold text-lg transition-all duration-300 inline-flex"
+                >
+                  Sign In
+                </Link>
+              </motion.div>
+            </motion.div>
       
           </div>
           
@@ -153,18 +210,22 @@ export default function LandingPage() {
       </main>
 
       {/* MacBook Scroll Section */}
-      <section className={`relative overflow-hidden transition-all duration-700 ease-out ${
-        featuresRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-      }`}>
+      <motion.section 
+        className={`relative overflow-hidden transition-all duration-700 ease-out translate-y-[-240px] ${
+          featuresRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+        }`}
+        initial={{ opacity: 0, y: 60 }}
+        animate={featuresRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+      >
         <MacbookScroll
           title={
             <div className="text-center">
               <h2 className="text-4xl md:text-6xl font-bold text-white mb-4">
-                Portfolio Doctor Dashboard
+              
               </h2>
               <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto">
-                Transparent health scores with diversification analysis,
-                volatility tracking, overlap detection, and smart cash exposure recommendations
+              
               </p>
             </div>
           }
@@ -176,13 +237,18 @@ export default function LandingPage() {
           src="/dashboard-preview.png"
           showGradient={true}
         />
-      </section>
+      </motion.section>
 
       {/* Footer */}
-      <footer className={`relative z-10 border-t border-white/5 transition-all duration-700 ease-out ${
-        footerRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-      }`}>
-        <div className="max-w-7xl mx-auto px-6 py-8">
+      <motion.footer 
+        className={`relative z-10 border-t border-white/5 transition-all duration-700 ease-out  ${
+          footerRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}
+        initial={{ opacity: 0, y: 20 }}
+        animate={footerRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+      >
+        <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center">
@@ -199,7 +265,7 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </footer>
+      </motion.footer>
       </div>
     </>
   );

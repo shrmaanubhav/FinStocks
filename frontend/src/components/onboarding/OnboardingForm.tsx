@@ -7,7 +7,7 @@ interface Holding {
   symbol: string;
   name?: string;
   quantity: number;
-  source: "manual" | "screenshot_upload";
+  source: "manual" | "pdf_upload";
 }
 
 interface OnboardingData {
@@ -105,12 +105,42 @@ export default function OnboardingForm({ userId, userEmail, onComplete }: Onboar
     updateFormData("holdings", updated);
   };
 
-  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // For now, we'll just show a placeholder message
-      // In production, this would use OCR to extract holdings
-      alert("Screenshot uploaded! In production, this would use AI/OCR to extract your holdings.");
+      if (file.type !== 'application/pdf') {
+        alert('Please upload a PDF file only.');
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        alert('File size must be less than 10MB.');
+        return;
+      }
+
+      try {
+        // Get user ID from localStorage
+        const userId = localStorage.getItem('user_id');
+        if (!userId) {
+          alert('Please log in first.');
+          return;
+        }
+
+        // Import the API function dynamically
+        const { onboardingApi } = await import('@/lib/api');
+
+        const response = await onboardingApi.uploadPDF(userId, file);
+        if (response.success) {
+          alert('PDF uploaded successfully! Holdings will be extracted and added to your portfolio.');
+          // Optionally refresh the page or update the holdings
+          window.location.reload();
+        } else {
+          alert('Failed to upload PDF. Please try again.');
+        }
+      } catch (error) {
+        console.error('PDF upload error:', error);
+        alert('Failed to upload PDF. Please try again.');
+      }
     }
   }, []);
 
@@ -480,30 +510,30 @@ export default function OnboardingForm({ userId, userEmail, onComplete }: Onboar
                     )}
                   </div>
 
-                  {/* Screenshot Upload */}
+                  {/* PDF Upload */}
                   <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
                     <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                       <svg className="w-5 h-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
-                      Or Upload Screenshot
+                      Or Upload PDF Statement
                     </h3>
                     <p className="text-sm text-gray-400 mb-4">
-                      Upload a screenshot from your broker app (Zerodha, Groww, etc.) and we&apos;ll extract your holdings automatically.
+                      Upload your PDF statement from your broker (Zerodha, Groww, etc.) and we&apos;ll extract your holdings automatically.
                     </p>
                     <label className="block">
                       <div className="flex items-center justify-center px-6 py-8 rounded-xl border-2 border-dashed border-white/20 hover:border-brand-500/50 cursor-pointer transition-all">
                         <div className="text-center">
                           <svg className="mx-auto h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
                           <p className="mt-2 text-sm text-gray-400">Click to upload or drag and drop</p>
-                          <p className="text-xs text-gray-500">PNG, JPG up to 10MB</p>
+                          <p className="text-xs text-gray-500">PDF files up to 10MB</p>
                         </div>
                       </div>
                       <input
                         type="file"
-                        accept="image/*"
+                        accept=".pdf"
                         onChange={handleFileUpload}
                         className="hidden"
                       />
