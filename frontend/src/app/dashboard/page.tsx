@@ -16,36 +16,23 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome Header with User Name */}
-      <WelcomeHeader />
+      {/* <WelcomeHeader /> */}
       
       {/* Stock Holdings - First thing shown */}
       <StockHoldings />
       
       {/* Safety Disclaimer */}
-      <SafetyDisclaimer />
       
       {/* Main Grid */}
       <div className="grid grid-cols-12 gap-6">
         {/* Portfolio Health Score */}
-        <div className="col-span-12 xl:col-span-7">
-          <PortfolioDoctor />
-        </div>
-
-        {/* Risk Signals */}
-        <div className="col-span-12 xl:col-span-5">
-          <RiskSignals />
-        </div>
-
-        {/* Portfolio Overview */}
-        <div className="col-span-12 xl:col-span-7">
-          <PortfolioOverview />
-        </div>
 
         {/* Hinglish News Feed */}
         <div className="col-span-12 xl:col-span-5">
           <HinglishNewsFeed />
         </div>
       </div>
+      <SafetyDisclaimer />
     </div>
   );
 }
