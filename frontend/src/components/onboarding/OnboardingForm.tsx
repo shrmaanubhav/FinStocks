@@ -23,7 +23,19 @@ interface OnboardingData {
   maritalStatus: string;
   children: string;
   
-  // Slide 3: Investment Information
+  // Slide 3: Investor Profile
+  jobType: string;
+  job: string;
+  monthlyIncome: string;
+  sideIncome: string;
+  investmentGoal: string;
+  investmentDuration: string;
+  riskPreference: string;
+  investingYears: string;
+  retirementAge: string;
+  stocks: string[];
+
+  // Slide 4: Investment Information
   holdings: Holding[];
   lifestyle: string;
 }
@@ -59,10 +71,19 @@ const maritalStatuses = [
   { value: "widowed", label: "Widowed" },
 ];
 
+const jobTypes = [
+  { value: "private", label: "Private" },
+  { value: "government", label: "Government" },
+  { value: "semi private", label: "Semi Private" },
+  { value: "non profit", label: "Non Profit" },
+  { value: "business", label: "Business" },
+];
+
 export default function OnboardingForm({ userId, userEmail, onComplete }: OnboardingFormProps) {
   const [currentSlide, setCurrentSlide] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [stocksInput, setStocksInput] = useState("");
   
   const [formData, setFormData] = useState<OnboardingData>({
     name: "",
@@ -73,13 +94,26 @@ export default function OnboardingForm({ userId, userEmail, onComplete }: Onboar
     expenditureRange: "",
     maritalStatus: "",
     children: "0",
+    jobType: "",
+    job: "",
+    monthlyIncome: "",
+    sideIncome: "",
+    investmentGoal: "",
+    investmentDuration: "",
+    riskPreference: "",
+    investingYears: "",
+    retirementAge: "",
+    stocks: [],
     holdings: [],
     lifestyle: "",
   });
 
   const [newHolding, setNewHolding] = useState({ symbol: "", name: "", quantity: "" });
 
-  const updateFormData = (field: keyof OnboardingData, value: string | Holding[]) => {
+  const updateFormData = <K extends keyof OnboardingData>(
+    field: K,
+    value: OnboardingData[K]
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -151,6 +185,8 @@ export default function OnboardingForm({ userId, userEmail, onComplete }: Onboar
       case 2:
         return !!(formData.incomeRange && formData.expenditureRange && formData.maritalStatus);
       case 3:
+        return true; // Investor profile is optional
+      case 4:
         return true; // Holdings and lifestyle are optional
       default:
         return false;
@@ -159,7 +195,7 @@ export default function OnboardingForm({ userId, userEmail, onComplete }: Onboar
 
   const nextSlide = () => {
     if (validateSlide(currentSlide)) {
-      setCurrentSlide((prev) => Math.min(prev + 1, 3));
+      setCurrentSlide((prev) => Math.min(prev + 1, 4));
       setError("");
     } else {
       setError("Please fill in all required fields");
@@ -176,6 +212,11 @@ export default function OnboardingForm({ userId, userEmail, onComplete }: Onboar
     setError("");
 
     try {
+      const parsedStocks = stocksInput
+        .split(/[\s,]+/g)
+        .map((stock) => stock.trim().toUpperCase())
+        .filter(Boolean);
+
       const response = await fetch("/api/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -184,6 +225,12 @@ export default function OnboardingForm({ userId, userEmail, onComplete }: Onboar
           ...formData,
           age: parseInt(formData.age),
           children: parseInt(formData.children),
+          monthlyIncome: formData.monthlyIncome ? parseFloat(formData.monthlyIncome) : null,
+          sideIncome: formData.sideIncome ? parseFloat(formData.sideIncome) : null,
+          riskPreference: formData.riskPreference ? parseFloat(formData.riskPreference) : null,
+          investingYears: formData.investingYears ? parseInt(formData.investingYears) : null,
+          retirementAge: formData.retirementAge ? parseInt(formData.retirementAge) : null,
+          stocks: parsedStocks,
         }),
       });
 
@@ -221,19 +268,19 @@ export default function OnboardingForm({ userId, userEmail, onComplete }: Onboar
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-400">Step {currentSlide} of 3</span>
+            <span className="text-sm text-gray-400">Step {currentSlide} of 4</span>
             <span className="text-sm text-gray-400">{userEmail}</span>
           </div>
           <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-gradient-to-r from-brand-500 to-purple-600"
               initial={{ width: "0%" }}
-              animate={{ width: `${(currentSlide / 3) * 100}%` }}
+              animate={{ width: `${(currentSlide / 4) * 100}%` }}
               transition={{ duration: 0.3, ease: "easeOut" }}
             />
           </div>
           <div className="flex justify-between mt-2">
-            {["Personal Info", "Financial Info", "Investments"].map((label, index) => (
+            {["Personal Info", "Financial Info", "Investor Profile", "Investments"].map((label, index) => (
               <span
                 key={label}
                 className={`text-xs ${
@@ -410,8 +457,174 @@ export default function OnboardingForm({ userId, userEmail, onComplete }: Onboar
                 </div>
               )}
 
-              {/* Slide 3: Investment Information */}
+              {/* Slide 3: Investor Profile */}
               {currentSlide === 3 && (
+                <div className="space-y-6">
+                  <div className="text-center mb-8">
+                    <h2 className="text-2xl font-bold text-white mb-2">Investor Profile</h2>
+                    <p className="text-gray-400">Share your work and investment preferences</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Job Type
+                      </label>
+                      <select
+                        value={formData.jobType}
+                        onChange={(e) => updateFormData("jobType", e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
+                      >
+                        <option value="" className="bg-gray-900">Select job type</option>
+                        {jobTypes.map((type) => (
+                          <option key={type.value} value={type.value} className="bg-gray-900">
+                            {type.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Job Title
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.job}
+                        onChange={(e) => updateFormData("job", e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
+                        placeholder="Corporate Job"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Monthly Income 
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={formData.monthlyIncome}
+                        onChange={(e) => updateFormData("monthlyIncome", e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
+                        placeholder="60000"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Side Income 
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={formData.sideIncome}
+                        onChange={(e) => updateFormData("sideIncome", e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
+                        placeholder="0"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Investment Goal
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.investmentGoal}
+                        onChange={(e) => updateFormData("investmentGoal", e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
+                        placeholder="Wealth building"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Investment Duration
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.investmentDuration}
+                        onChange={(e) => updateFormData("investmentDuration", e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
+                        placeholder="10 years"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Risk Preference (0-1)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={formData.riskPreference}
+                        onChange={(e) => updateFormData("riskPreference", e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
+                        placeholder="0.5"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Investing Years
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={formData.investingYears}
+                        onChange={(e) => updateFormData("investingYears", e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
+                        placeholder="0"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Planned Retirement Age
+                      </label>
+                      <input
+                        type="number"
+                        min="18"
+                        max="120"
+                        value={formData.retirementAge}
+                        onChange={(e) => updateFormData("retirementAge", e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
+                        placeholder="55"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Interested Stocks (symbols)
+                      </label>
+                      <input
+                        type="text"
+                        value={stocksInput}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setStocksInput(value);
+                          const parsed = value
+                            .split(/[\s,]+/g)
+                            .map((stock) => stock.trim().toUpperCase())
+                            .filter(Boolean);
+                          updateFormData("stocks", parsed);
+                        }}
+                        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
+                        placeholder="AAPL, MSFT, TSLA"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Separate symbols with commas or spaces.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Slide 4: Investment Information */}
+              {currentSlide === 4 && (
                 <div className="space-y-6">
                   <div className="text-center mb-8">
                     <h2 className="text-2xl font-bold text-white mb-2">Your Investments</h2>
@@ -586,7 +799,7 @@ export default function OnboardingForm({ userId, userEmail, onComplete }: Onboar
               ← Back
             </button>
 
-            {currentSlide < 3 ? (
+            {currentSlide < 4 ? (
               <button
                 type="button"
                 onClick={nextSlide}

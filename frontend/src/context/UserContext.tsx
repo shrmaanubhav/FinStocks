@@ -14,6 +14,16 @@ export interface UserProfile {
   expenditureRange: string;
   maritalStatus: string;
   children: number;
+  jobType?: string;
+  job?: string;
+  monthlyIncome?: number | null;
+  sideIncome?: number | null;
+  investmentGoal?: string;
+  investmentDuration?: string;
+  riskPreference?: number | null;
+  investingYears?: number | null;
+  retirementAge?: number | null;
+  stocks?: string[];
   holdings: Holding[];
   lifestyle: string;
   onboardingCompleted: boolean;

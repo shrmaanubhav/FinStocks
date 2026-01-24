@@ -18,6 +18,16 @@ export async function POST(request: NextRequest) {
       expenditureRange,
       maritalStatus,
       children,
+      jobType,
+      job,
+      monthlyIncome,
+      sideIncome,
+      investmentGoal,
+      investmentDuration,
+      riskPreference,
+      investingYears,
+      retirementAge,
+      stocks,
       holdings,
       lifestyle,
     } = body;
@@ -60,6 +70,16 @@ export async function POST(request: NextRequest) {
       existingProfile.expenditureRange = expenditureRange;
       existingProfile.maritalStatus = maritalStatus;
       existingProfile.children = children || 0;
+      existingProfile.jobType = jobType || "";
+      existingProfile.job = job || "";
+      existingProfile.monthlyIncome = monthlyIncome ?? null;
+      existingProfile.sideIncome = sideIncome ?? null;
+      existingProfile.investmentGoal = investmentGoal || "";
+      existingProfile.investmentDuration = investmentDuration || "";
+      existingProfile.riskPreference = riskPreference ?? null;
+      existingProfile.investingYears = investingYears ?? null;
+      existingProfile.retirementAge = retirementAge ?? null;
+      existingProfile.stocks = stocks || [];
       existingProfile.holdings = holdings || [];
       existingProfile.lifestyle = lifestyle || "";
       existingProfile.onboardingCompleted = true;
@@ -90,6 +110,16 @@ export async function POST(request: NextRequest) {
       expenditureRange,
       maritalStatus,
       children: children || 0,
+      jobType: jobType || "",
+      job: job || "",
+      monthlyIncome: monthlyIncome ?? null,
+      sideIncome: sideIncome ?? null,
+      investmentGoal: investmentGoal || "",
+      investmentDuration: investmentDuration || "",
+      riskPreference: riskPreference ?? null,
+      investingYears: investingYears ?? null,
+      retirementAge: retirementAge ?? null,
+      stocks: stocks || [],
       holdings: holdings || [],
       lifestyle: lifestyle || "",
       onboardingCompleted: true,
@@ -153,6 +183,16 @@ export async function GET(request: NextRequest) {
           expenditureRange: profile.expenditureRange,
           maritalStatus: profile.maritalStatus,
           children: profile.children,
+          jobType: profile.jobType,
+          job: profile.job,
+          monthlyIncome: profile.monthlyIncome,
+          sideIncome: profile.sideIncome,
+          investmentGoal: profile.investmentGoal,
+          investmentDuration: profile.investmentDuration,
+          riskPreference: profile.riskPreference,
+          investingYears: profile.investingYears,
+          retirementAge: profile.retirementAge,
+          stocks: profile.stocks,
           holdings: profile.holdings,
           lifestyle: profile.lifestyle,
           onboardingCompleted: profile.onboardingCompleted,
