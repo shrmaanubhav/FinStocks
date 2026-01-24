@@ -310,20 +310,41 @@ export default function NewsPage() {
   const stockIcon = currentCard ? getStockIcon(currentCard.stock) : "📊";
 
   return (
-    <div className="min-h-screen pb-8">
+    <div className="h-screen overflow-hidden flex flex-col">
       <PageBreadCrumb pageTitle="News Feed" />
       
-      <div className="max-w-2xl mx-auto px-4">
+      <div className="flex-1 relative max-w-2xl mx-auto px-4 w-full">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Market News
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            Swipe through the latest news from your portfolio stocks
-          </p>
-        </div>
-
+          {/* Stock Filter Pills */}
+            <div className="mt-4 mb-4">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 text-center">
+                Filter by stock
+              </h3>
+              <div className="flex flex-wrap justify-center gap-2">
+                {Object.keys(newsData).map((stock) => {
+                  const color = getStockColor(stock);
+                  const icon = getStockIcon(stock);
+                  const stockCards = allCards.filter((c) => c.stock === stock);
+                  const firstIndex = allCards.findIndex((c) => c.stock === stock);
+                  
+                  return (
+                    <button
+                      key={stock}
+                      onClick={() => firstIndex >= 0 && setCurrentIndex(firstIndex)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${
+                        currentCard?.stock === stock
+                          ? `${color.bg} ${color.border} text-white`
+                          : "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                      }`}
+                    >
+                      <span>{icon}</span>
+                      <span className="font-medium">{stock}</span>
+                      <span className="text-xs opacity-60">({stockCards.length})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
         {error && allCards.length === 0 ? (
           <div className="rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-6 text-center">
             <p className="text-red-600 dark:text-red-400">{error}</p>
@@ -335,9 +356,31 @@ export default function NewsPage() {
             </button>
           </div>
         ) : (
-          <>
+          <div className="relative">
+            {/* Left Navigation Button */}
+            <button
+              onClick={goToPrev}
+              disabled={currentIndex === 0}
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-lg"
+            >
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            {/* Right Navigation Button */}
+            <button
+              onClick={goToNext}
+              disabled={currentIndex >= allCards.length - 1}
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 p-4 rounded-full bg-brand-500 text-white hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-lg"
+            >
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
             {/* Swipeable Card Container */}
-            <div className="relative h-[500px] perspective-1000">
+            <div className="relative h-[60vh] min-h-[400px] max-h-[600px] perspective-1000 mx-16">
               {/* Background cards for stack effect */}
               {currentIndex + 2 < allCards.length && (
                 <div
@@ -349,7 +392,7 @@ export default function NewsPage() {
                   className={`absolute inset-0 rounded-3xl opacity-50 scale-95 translate-y-4 ${getStockColor(allCards[currentIndex + 1]?.stock).bg}`}
                 />
               )}
-
+              
               {/* Main Card */}
               {currentCard && (
                 <div
@@ -366,6 +409,7 @@ export default function NewsPage() {
                   onMouseUp={onMouseUp}
                   onMouseLeave={onMouseLeave}
                 >
+                  
                   {/* Card Content */}
                   <div className="h-full flex flex-col p-8">
                     {/* Stock Badge */}
@@ -452,67 +496,11 @@ export default function NewsPage() {
                 <span className="text-brand-500 font-semibold">{currentIndex + 1}</span>
                 <span> / {allCards.length}</span>
               </p>
-
-              {/* Navigation Buttons */}
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={goToPrev}
-                  disabled={currentIndex === 0}
-                  className="p-3 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button
-                  onClick={goToNext}
-                  disabled={currentIndex >= allCards.length - 1}
-                  className="p-3 rounded-full bg-brand-500 text-white hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
             </div>
 
-            {/* Stock Filter Pills */}
-            <div className="mt-8">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 text-center">
-                Filter by stock
-              </h3>
-              <div className="flex flex-wrap justify-center gap-2">
-                {Object.keys(newsData).map((stock) => {
-                  const color = getStockColor(stock);
-                  const icon = getStockIcon(stock);
-                  const stockCards = allCards.filter((c) => c.stock === stock);
-                  const firstIndex = allCards.findIndex((c) => c.stock === stock);
-                  
-                  return (
-                    <button
-                      key={stock}
-                      onClick={() => firstIndex >= 0 && setCurrentIndex(firstIndex)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${
-                        currentCard?.stock === stock
-                          ? `${color.bg} ${color.border} text-white`
-                          : "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                      }`}
-                    >
-                      <span>{icon}</span>
-                      <span className="font-medium">{stock}</span>
-                      <span className="text-xs opacity-60">({stockCards.length})</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </>
+          
+          </div>
         )}
-
-        {/* Tips */}
-        <div className="mt-8 text-center text-sm text-gray-400 dark:text-gray-500">
-          <p>💡 Tip: Use arrow keys or swipe to navigate between news cards</p>
-        </div>
       </div>
     </div>
   );

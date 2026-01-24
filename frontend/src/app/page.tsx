@@ -84,7 +84,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-4">
               <Link
                 href="/dashboard"
-                className="px-5 py-2.5 rounded-xl border border-[2px]  text-white font-medium transition-all duration-300 hover:shadow-sm hover:shadow-brand-500/25"
+                className="px-5 py-2.5 rounded-xl border  text-white font-medium transition-all duration-300 hover:shadow-sm hover:bg-brand-500/25"
               >
                 Dashboard
               </Link>

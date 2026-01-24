@@ -17,12 +17,25 @@ export default function AdminLayout({
   const { isAuthenticated, isLoading } = useUser();
   const router = useRouter();
 
-  // Redirect to login if not authenticated
+  // Redirect to sign-in if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push("/signin");
+      router.push('/signin');
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isLoading, isAuthenticated, router]);
+
+  // Show loading or redirect while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-brand-500"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null; // Will redirect via useEffect
+  }
 
   // Dynamic class for main content margin based on sidebar state
   const mainContentMargin = isMobileOpen
@@ -30,20 +43,6 @@ export default function AdminLayout({
     : isExpanded || isHovered
     ? "lg:ml-[290px]"
     : "lg:ml-[90px]";
-
-  // Show loading state while checking authentication
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-600 dark:text-gray-400">Loading...</div>
-      </div>
-    );
-  }
-
-  // Don't render dashboard if not authenticated
-  if (!isAuthenticated) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen xl:flex">
