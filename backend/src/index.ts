@@ -1,5 +1,5 @@
+import "dotenv/config";
 import { app } from "./app";
-
 
 // Get the port number from environment variables
 // Make sure you have a .env file with `PORT=3000` or similar
