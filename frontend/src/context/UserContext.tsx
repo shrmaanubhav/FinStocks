@@ -1,21 +1,22 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 // Types for user profile data
 export interface UserProfile {
-  id?: string;
-  clerkId: string;
+  id: string;
+  userId: string;
   name: string;
   age: number;
-  pan: string;
   phone: string;
   address: string;
-  annualIncome: string;
-  monthlyExpenditure: string;
+  incomeRange: string;
+  expenditureRange: string;
   maritalStatus: string;
   children: number;
+  holdings: Holding[];
   lifestyle: string;
+  onboardingCompleted: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -23,14 +24,15 @@ export interface UserProfile {
 export interface Holding {
   id?: string;
   symbol: string;
-  name: string;
+  name?: string;
   quantity: number;
-  buyPrice: number;
+  buyPrice?: number;
   currentPrice?: number;
   change?: number;
   changePercent?: number;
   value?: number;
   sector?: string;
+  source: "manual" | "screenshot_upload";
 }
 
 export interface Portfolio {
@@ -55,84 +57,98 @@ export interface HealthScore {
 }
 
 interface UserContextType {
+  userId: string | null;
+  userEmail: string | null;
   userProfile: UserProfile | null;
   portfolio: Portfolio | null;
   healthScore: HealthScore | null;
   isLoading: boolean;
   error: string | null;
   isOnboarded: boolean;
+  isAuthenticated: boolean;
   updateProfile: (profile: Partial<UserProfile>) => void;
   updatePortfolio: (portfolio: Partial<Portfolio>) => void;
+  logout: () => void;
+  refreshProfile: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [userProfile, setUserProfile] = useState<UserProfile | null>({
-    id: "demo",
-    clerkId: "demo-user",
-    name: "Demo User",
-    age: 30,
-    pan: "ABCDE1234F",
-    phone: "+91-9876543210",
-    address: "Demo Address",
-    annualIncome: "1200000",
-    monthlyExpenditure: "50000",
-    maritalStatus: "single",
-    children: 0,
-    lifestyle: "moderate",
-  });
-  const [portfolio, setPortfolio] = useState<Portfolio | null>({
-    id: "demo-portfolio",
-    userId: "demo-user",
-    holdings: [
-      {
-        id: "1",
-        symbol: "RELIANCE",
-        name: "Reliance Industries Ltd",
-        quantity: 10,
-        buyPrice: 2500,
-        currentPrice: 2600,
-        change: 100,
-        changePercent: 4.0,
-        value: 26000,
-        sector: "Energy"
-      },
-      {
-        id: "2",
-        symbol: "TCS",
-        name: "Tata Consultancy Services Ltd",
-        quantity: 5,
-        buyPrice: 3200,
-        currentPrice: 3100,
-        change: -100,
-        changePercent: -3.13,
-        value: 15500,
-        sector: "Technology"
-      }
-    ],
-    totalValue: 41500,
-    totalChange: 0,
-  });
-  const [healthScore, setHealthScore] = useState<HealthScore | null>({
-    overallScore: 75,
-    factors: {
-      diversification: 80,
-      volatility: 70,
-      overlap: 60,
-      cashExposure: 85
-    },
-    recommendations: [
-      "Consider adding more diversification across sectors",
-      "Review your risk exposure",
-      "Monitor portfolio performance regularly"
-    ]
-  });
-  const [isLoading, setIsLoading] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
+  const [healthScore, setHealthScore] = useState<HealthScore | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Check if user has completed onboarding
-  const isOnboarded = Boolean(userProfile?.name && userProfile?.pan);
+  // Check localStorage for user session on mount
+  useEffect(() => {
+    const storedUserId = localStorage.getItem("finstock_user_id");
+    const storedUserEmail = localStorage.getItem("finstock_user_email");
+    const storedOnboarding = localStorage.getItem("finstock_onboarding_completed");
+    
+    if (storedUserId) {
+      setUserId(storedUserId);
+      setUserEmail(storedUserEmail);
+      
+      // Fetch user profile from API
+      if (storedOnboarding === "true") {
+        fetchUserProfile(storedUserId);
+      }
+    }
+    
+    setIsLoading(false);
+  }, []);
+
+  const fetchUserProfile = async (uid: string) => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/onboarding?userId=${uid}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setUserProfile(data.profile);
+        
+        // Create portfolio from holdings
+        if (data.profile.holdings && data.profile.holdings.length > 0) {
+          setPortfolio({
+            userId: uid,
+            holdings: data.profile.holdings,
+            totalValue: 0, // Calculate from holdings
+          });
+        }
+        
+        // Set demo health score
+        setHealthScore({
+          overallScore: 72,
+          factors: {
+            diversification: 65,
+            volatility: 78,
+            overlap: 82,
+            cashExposure: 70,
+          },
+          recommendations: [
+            "Consider adding more defensive sectors",
+            "Your portfolio has good volatility management",
+            "Review overlapping funds in your holdings",
+          ],
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch user profile:", err);
+      setError("Failed to load profile data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const refreshProfile = async () => {
+    if (userId) {
+      await fetchUserProfile(userId);
+    }
+  };
 
   const updateProfile = (profile: Partial<UserProfile>) => {
     if (userProfile) {
@@ -146,28 +162,47 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const value: UserContextType = {
-    userProfile,
-    portfolio,
-    healthScore,
-    isLoading,
-    error,
-    isOnboarded,
-    updateProfile,
-    updatePortfolio,
+  const logout = () => {
+    localStorage.removeItem("finstock_user_id");
+    localStorage.removeItem("finstock_user_email");
+    localStorage.removeItem("finstock_onboarding_completed");
+    setUserId(null);
+    setUserEmail(null);
+    setUserProfile(null);
+    setPortfolio(null);
+    setHealthScore(null);
   };
 
+  const isOnboarded = userProfile?.onboardingCompleted ?? false;
+  const isAuthenticated = !!userId;
+
   return (
-    <UserContext.Provider value={value}>
+    <UserContext.Provider
+      value={{
+        userId,
+        userEmail,
+        userProfile,
+        portfolio,
+        healthScore,
+        isLoading,
+        error,
+        isOnboarded,
+        isAuthenticated,
+        updateProfile,
+        updatePortfolio,
+        logout,
+        refreshProfile,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );
 }
 
-export function useUserContext() {
+export function useUser() {
   const context = useContext(UserContext);
   if (context === undefined) {
-    throw new Error("useUserContext must be used within a UserProvider");
+    throw new Error("useUser must be used within a UserProvider");
   }
   return context;
 }

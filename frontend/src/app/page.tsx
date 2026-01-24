@@ -125,7 +125,7 @@ export default function LandingPage() {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
               <Link
-                href="/dashboard"
+                href="/signup"
                 className="group px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-500 to-purple-600 text-white font-semibold text-lg transition-all duration-300 hover:shadow-2xl hover:shadow-brand-500/30 hover:scale-105 flex items-center gap-3"
               >
                 Start Free Health Check
@@ -139,10 +139,10 @@ export default function LandingPage() {
                 </svg>
               </Link>
               <Link
-                href="#features"
+                href="/signin"
                 className="px-8 py-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-sm font-semibold text-lg transition-all duration-300"
               >
-                See How It Works
+                Sign In
               </Link>
             </div>
 
