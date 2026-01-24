@@ -1,9 +1,9 @@
-// Import the Express app instance
-import { app } from "./app.js";
+import { app } from "./app";
+
 
 // Get the port number from environment variables
 // Make sure you have a .env file with `PORT=3000` or similar
-const port: number = process.env.PORT ? Number(process.env.PORT) : 3802; // Default to 3802 if PORT is not set
+const port: number = process.env.PORT ? Number(process.env.PORT) : 4000; // Default to 4000 if PORT is not set
 
 // Start the server and listen on the specified port
 app.listen(port, () => {

@@ -3,7 +3,7 @@ import express from "express"; // Express framework for building backend APIs
 import cors from "cors"; // Middleware to handle Cross-Origin Resource Sharing
 import cookieParser from "cookie-parser"; // Middleware to parse cookies
 import { rateLimiter } from "express-rate-shield";
-import { swaggerSpec } from "./swagger.config.js";
+import { swaggerSpec } from "./swagger.config";
 import swaggerUi from "swagger-ui-express";
 // Initialize Express app
 const app = express();
