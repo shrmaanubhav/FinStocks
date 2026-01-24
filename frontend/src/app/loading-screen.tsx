@@ -8,8 +8,8 @@ export default function LoadingScreen() {
 
   useEffect(() => {
     const text = "Welcome to FinStock";
-    const revealDelayMs = 150;
-    const extraDelayMs = 1000; // 1 second after full reveal
+    const revealDelayMs = 75;
+    const extraDelayMs = 500; // 0.5 second after full reveal
 
     // Calculate total time: (text length * reveal delay) + extra delay
     const totalTime = (text.length * revealDelayMs) + extraDelayMs;
@@ -31,8 +31,8 @@ export default function LoadingScreen() {
         <div className="text-2xl font-light text-white mb-4">
           <EncryptedText
             text="Welcome to FinStock"
-            revealDelayMs={150}
-            flipDelayMs={100}
+            revealDelayMs={75}
+            flipDelayMs={50}
             revealedClassName="text-white"
             encryptedClassName="text-gray-500"
           />
