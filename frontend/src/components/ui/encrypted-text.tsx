@@ -57,6 +57,14 @@ export const EncryptedText: React.FC<EncryptedTextProps> = ({
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true });
 
+  // Prevent SSR/client hydration mismatch by rendering the plain text
+  // on the server and initial client render, then start the scramble
+  // animation after the component mounts.
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const [revealCount, setRevealCount] = useState<number>(0);
   const animationFrameRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(0);
@@ -125,6 +133,17 @@ export const EncryptedText: React.FC<EncryptedTextProps> = ({
   }, [isInView, text, revealDelayMs, charset, flipDelayMs]);
 
   if (!text) return null;
+
+  // If not mounted yet, render the plain text so server and initial
+  // client HTML match exactly (avoids hydration mismatch). After
+  // mounting, the scramble animation will render.
+  if (!isMounted) {
+    return (
+      <motion.span ref={ref} className={cn(className)} aria-label={text} role="text">
+        {text}
+      </motion.span>
+    );
+  }
 
   return (
     <motion.span
