@@ -83,7 +83,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-4">
               <Link
                 href="/dashboard"
-                className="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-medium transition-all duration-300 hover:shadow-lg hover:shadow-brand-500/25"
+                className="px-5 py-2.5 rounded-xl border border-[2px]  text-white font-medium transition-all duration-300 hover:shadow-sm hover:shadow-brand-500/25"
               >
                 Dashboard
               </Link>
@@ -126,9 +126,9 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
               <Link
                 href="/signup"
-                className="group px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-500 to-purple-600 text-white font-semibold text-lg transition-all duration-300 hover:shadow-2xl hover:shadow-brand-500/30 hover:scale-105 flex items-center gap-3"
+                className="group px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-500/20 to-purple-600/20 border-[0.2px] border-white/15 text-white  text-lg transition-all duration-300 hover:shadow-2xl hover:shadow-brand-500/30 hover:scale-105 flex items-center gap-3"
               >
-                Start Free Health Check
+                Get Started
                 <svg 
                   className="w-5 h-5 group-hover:translate-x-1 transition-transform" 
                   fill="none" 
