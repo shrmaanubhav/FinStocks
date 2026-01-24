@@ -167,7 +167,7 @@ export default function LandingPage() {
           <div id="features" className={`mt-32 grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-700 ease-out ${
             featuresRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
           }`}>
-            {/* Portfolio Doctor Card */}
+            {/* AI Analysis Card */}
             <div className="group relative p-8 rounded-3xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 backdrop-blur-xl hover:border-brand-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-brand-500/10">
               <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-brand-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative">
@@ -176,7 +176,7 @@ export default function LandingPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-3">Portfolio Doctor</h3>
+                <h3 className="text-xl font-semibold text-white mb-3">AI Analysis</h3>
                 <p className="text-gray-400 leading-relaxed">
                   Get a comprehensive health score with insights on diversification, volatility, overlap, and cash exposure.
                 </p>

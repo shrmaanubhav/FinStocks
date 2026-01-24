@@ -156,7 +156,7 @@ export default function PortfolioDoctor() {
               </svg>
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Portfolio Doctor</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">AI Analysis</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">Your portfolio&apos;s health checkup</p>
             </div>
           </div>

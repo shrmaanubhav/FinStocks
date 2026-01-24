@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import StockHoldings from "@/components/dashboard/StockHoldings";
 import PortfolioDoctor from "@/components/dashboard/PortfolioDoctor";
 import HinglishNewsFeed from "@/components/dashboard/HinglishNewsFeed";
 import PortfolioOverview from "@/components/dashboard/PortfolioOverview";
@@ -16,6 +17,9 @@ export default function Dashboard() {
     <div className="space-y-6">
       {/* Welcome Header with User Name */}
       <WelcomeHeader />
+      
+      {/* Stock Holdings - First thing shown */}
+      <StockHoldings />
       
       {/* Safety Disclaimer */}
       <SafetyDisclaimer />
