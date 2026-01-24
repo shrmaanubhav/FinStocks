@@ -27,13 +27,15 @@ interface StockData extends Holding {
 }
 
 export default function StockHoldings() {
-  const { userProfile, isLoading } = useUser();
+  const { userProfile, isLoading, userId } = useUser();
   const [stocks, setStocks] = useState<StockData[]>([]);
   const [stocksLoading, setStocksLoading] = useState(true);
   const [totalValue, setTotalValue] = useState(0);
   const [totalChange, setTotalChange] = useState(0);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [selectedStock, setSelectedStock] = useState<StockData | null>(null);
+
+  const cacheKey = userId ? `finstock_stock_cache_${userId}` : "finstock_stock_cache";
 
   const fetchStockData = useCallback(async (holdings: Holding[]) => {
     try {
@@ -65,8 +67,9 @@ export default function StockHoldings() {
           };
         });
 
+        const updatedAt = new Date();
         setStocks(enrichedStocks);
-        setLastUpdated(new Date());
+        setLastUpdated(updatedAt);
         setSelectedStock((prev) => {
           if (!prev) return enrichedStocks[0] || null;
           const match = enrichedStocks.find(
@@ -81,6 +84,16 @@ export default function StockHoldings() {
 
         setTotalValue(total);
         setTotalChange(change);
+
+        localStorage.setItem(
+          cacheKey,
+          JSON.stringify({
+            stocks: enrichedStocks,
+            totalValue: total,
+            totalChange: change,
+            lastUpdated: updatedAt.toISOString(),
+          })
+        );
       }
     } catch (error) {
       console.error("Failed to fetch stock data:", error);
@@ -96,15 +109,40 @@ export default function StockHoldings() {
     } finally {
       setStocksLoading(false);
     }
-  }, []);
+  }, [cacheKey]);
 
   useEffect(() => {
     if (userProfile?.holdings && userProfile.holdings.length > 0) {
+      const cachedRaw = localStorage.getItem(cacheKey);
+      if (cachedRaw) {
+        try {
+          const cached = JSON.parse(cachedRaw);
+          if (cached?.stocks?.length) {
+            setStocks(cached.stocks);
+            setTotalValue(cached.totalValue || 0);
+            setTotalChange(cached.totalChange || 0);
+            setLastUpdated(cached.lastUpdated ? new Date(cached.lastUpdated) : null);
+            setSelectedStock((prev) => {
+              if (!prev) return cached.stocks[0] || null;
+              const match = cached.stocks.find(
+                (item: StockData) => item.symbol?.toUpperCase() === prev.symbol?.toUpperCase()
+              );
+              return match || prev;
+            });
+            setStocksLoading(false);
+            return;
+          }
+        } catch (error) {
+          console.warn("Invalid stock cache, clearing:", error);
+          localStorage.removeItem(cacheKey);
+        }
+      }
+
       fetchStockData(userProfile.holdings);
     } else {
       setStocksLoading(false);
     }
-  }, [userProfile, fetchStockData]);
+  }, [userProfile, fetchStockData, cacheKey]);
 
   const handleRefresh = () => {
     if (userProfile?.holdings && userProfile.holdings.length > 0) {
