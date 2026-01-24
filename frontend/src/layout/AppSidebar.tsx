@@ -5,12 +5,14 @@ import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
   ChevronDownIcon,
+  DollarLineIcon,
   GridIcon,
   HorizontaLDots,
   PieChartIcon,
   UserCircleIcon,
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
+import { IconEyeDollar, IconSparkles } from "@tabler/icons-react";
 
 type NavItem = {
   name: string;
@@ -57,12 +59,12 @@ const navItems: NavItem[] = [
     path: "/dashboard",
   },
   {
-    icon: <HorizontaLDots />,
+    icon: <IconSparkles />,
     name: "AI Advice",
     path: "/dashboard/advice",
   },
   {
-    icon:<HorizontaLDots/>,
+    icon: <DollarLineIcon/>,
     name: " Strategy",
     path: "/dashboard/strategy"
   },
