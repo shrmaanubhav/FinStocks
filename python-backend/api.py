@@ -15,6 +15,7 @@ import json
 from datetime import datetime
 import uuid
 from services.portfolio import portfolio_summary_from_form, portfolio_summariser
+from services.news import news_extractor
 from classes import UsageClassfier
 
 load_dotenv()
@@ -148,6 +149,11 @@ class PortfolioAnalyzeRequest(BaseModel):
     retirement_age: Optional[int] = None
     martial_status: Optional[str] = ""
     stocks: List[str] = Field(default_factory=list)
+
+
+class NewsStocksRequest(BaseModel):
+    stocks: List[str]
+    limit: Optional[int] = 10
 
 
 # ============== In-Memory Storage (Replace with Supabase in production) ==============
@@ -401,67 +407,31 @@ async def analyze_portfolio(payload: PortfolioAnalyzeRequest):
 
 # ---------- News Endpoints ----------
 
-@app.get("/api/news/hinglish", response_model=HinglishNewsResponse)
-async def get_hinglish_news(userId: str, limit: int = 10):
-    """Get Hinglish news summaries filtered for user's holdings"""
-    
-    # TODO: Implement actual news fetching and LLM summarization
-    # For now, return mock data
-    
-    news = [
-        NewsItem(
-            id="1",
-            title="Reliance Q4 Results Beat Estimates",
-            hinglish_summary="Reliance ke Q4 results expectations se zyada ache aaye hain. Jio aur retail ka growth strong raha. Stock mein short-term mein positive momentum expected hai.",
-            related_stock="RELIANCE",
-            sentiment="positive",
-            source="Economic Times",
-            time_ago="15 min ago",
-            impact="high"
-        ),
-        NewsItem(
-            id="2",
-            title="HDFC Bank's Net Interest Margin Stable",
-            hinglish_summary="HDFC Bank ka NIM stable raha hai despite competition. Deposit growth bhi theek hai. Long-term investors ke liye ye achi news hai.",
-            related_stock="HDFCBANK",
-            sentiment="neutral",
-            source="Moneycontrol",
-            time_ago="1 hour ago",
-            impact="medium"
-        ),
-        NewsItem(
-            id="3",
-            title="IT Sector Faces Headwinds",
-            hinglish_summary="IT companies ko US recession fears se dikkat ho rahi hai. TCS aur Infosys ke guidance cautious hai.",
-            related_stock="TCS",
-            sentiment="negative",
-            source="Business Standard",
-            time_ago="2 hours ago",
-            impact="high"
-        ),
-        NewsItem(
-            id="4",
-            title="Tata Motors EV Sales Surge",
-            hinglish_summary="Tata Motors ke EV sales mein 45% growth dekhi gayi. Nexon EV market leader ban gaya hai.",
-            related_stock="TATAMOTORS",
-            sentiment="positive",
-            source="LiveMint",
-            time_ago="3 hours ago",
-            impact="medium"
-        ),
-        NewsItem(
-            id="5",
-            title="RBI Policy Update",
-            hinglish_summary="RBI ne interest rates unchanged rakhe hain. Banking stocks ke liye ye neutral hai.",
-            related_stock="MARKET",
-            sentiment="neutral",
-            source="Reuters India",
-            time_ago="5 hours ago",
-            impact="high"
-        ),
-    ]
-    
-    return HinglishNewsResponse(news=news[:limit])
+@app.post("/api/news")
+async def get_hinglish_news(payload: NewsStocksRequest):
+    """Get news summaries per stock symbol"""
+    stocks = [s.strip().upper() for s in payload.stocks if s and s.strip()]
+    if not stocks:
+        raise HTTPException(status_code=400, detail="stocks must be a non-empty array of symbols")
+
+    state: AppState = {
+        "usage": "invalid",
+        "user_query": "",
+        "stocks": stocks,
+        "portfolio": "",
+        "news": "",
+        "news_dict": {},
+        "market_news": "",
+        "macro_economics": "",
+        "macro_economics_dict": {},
+        "market_trends": "",
+        "advice": "",
+        "strategy": "",
+        "final_proposal": "",
+    }
+
+    state = news_extractor(state, limit=payload.limit or 10)
+    return {"stocks": state.get("news_dict", {})}
 
 
 @app.get("/api/news/stock/{symbol}", response_model=HinglishNewsResponse)
