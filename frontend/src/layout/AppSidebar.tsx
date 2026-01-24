@@ -58,8 +58,8 @@ const navItems: NavItem[] = [
   },
   {
     icon: <PortfolioDoctorIcon />,
-    name: "AI Analysis",
-    path: "/dashboard/portfolio-doctor",
+    name: "Advice",
+    path: "/dashboard/advice",
   },
   {
     icon: <NewsIcon />,
