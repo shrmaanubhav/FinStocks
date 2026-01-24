@@ -19,14 +19,14 @@ def advice(state: AppState) -> AppState:
     {state['macro_economics']}
     ```
 
-    You are also provided with overall Market News for each Stock separated by "------":
+    Market News for each Stock separated by "------":
     ```
     {state['market_news']}
     ```
 
     Return only valid JSON with this exact schema:
     {{
-      "summary_hinglish": "short Hinglish + English summary (1-2 lines)",
+      "summary": "short English summary (1-2 lines)",
       "global_risk": "low|medium|high",
       "stocks": [
         {{
@@ -37,6 +37,8 @@ def advice(state: AppState) -> AppState:
           "trend": "bullish|neutral|bearish",
           "risk_level": "low|medium|high",
           "reasons": ["short bullet 1", "short bullet 2", "short bullet 3"],
+          "full_advice": "well-reasoned, evidence-backed advice with facts and proof points",
+          "tips": ["short tip 1", "short tip 2"],
           "time_horizon": {{
             "today": {{
               "recommendation": "BUY|HOLD|SELL",

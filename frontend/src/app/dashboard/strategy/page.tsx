@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useUser } from "@/context/UserContext";
 
 type StrategyResponse = {
   strategy: string;
@@ -19,6 +20,7 @@ type AdviceResponse = {
 };
 
 export default function StrategyPage() {
+  const { userId } = useUser();
   const [strategy, setStrategy] = useState("");
   const [strategyLoading, setStrategyLoading] = useState(true);
 
@@ -29,7 +31,23 @@ export default function StrategyPage() {
   useEffect(() => {
     const fetchStrategy = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/strategy");
+        if (!userId) {
+          setStrategy("Please sign in to view your strategy.");
+          return;
+        }
+
+        const profileRes = await fetch(`/api/onboarding?userId=${userId}`);
+        if (!profileRes.ok) throw new Error();
+        const profileData = await profileRes.json();
+        const profile = profileData.profile;
+
+        console.log(profile)
+
+        const res = await fetch("http://localhost:8000/api/strategy", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(profile),
+        });
         if (!res.ok) throw new Error();
         const data: StrategyResponse = await res.json();
         setStrategy(data.strategy);
@@ -41,7 +59,7 @@ export default function StrategyPage() {
     };
 
     fetchStrategy();
-  }, []);
+  }, [userId]);
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return;

@@ -19,7 +19,7 @@ type Trend = "bullish" | "neutral" | "bearish";
 type RiskLevel = "low" | "medium" | "high";
 
 type StructuredAdvice = {
-  summary_hinglish?: string;
+  summary?: string;
   global_risk?: RiskLevel;
   stocks?: StockAdvice[];
 };
@@ -32,6 +32,8 @@ type StockAdvice = {
   trend: Trend;
   risk_level: RiskLevel;
   reasons?: string[];
+  full_advice?: string;
+  tips?: string[];
   time_horizon?: {
     today?: HorizonAdvice;
     three_days?: HorizonAdvice;
@@ -282,7 +284,7 @@ export default function Page() {
 }
 
 function StructuredAdviceView({ data }: { data: StructuredAdvice }) {
-  const summary = data.summary_hinglish || "";
+  const summary = data.summary || "";
   const stocks = data.stocks || [];
 
   return (
@@ -302,6 +304,7 @@ function StructuredAdviceView({ data }: { data: StructuredAdvice }) {
 }
 
 function StockAdviceCard({ stock }: { stock: StockAdvice }) {
+  const [showFull, setShowFull] = useState(false);
   const recommendationColor =
     stock.overall_recommendation === "BUY"
       ? "bg-green-500/15 text-green-300 border-green-500/30"
@@ -359,6 +362,33 @@ function StockAdviceCard({ stock }: { stock: StockAdvice }) {
           ))}
         </ul>
       )}
+
+      {(stock.full_advice || (stock.tips && stock.tips.length > 0)) && (
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={() => setShowFull((prev) => !prev)}
+            className="text-xs text-brand-400 hover:text-brand-300 transition-colors"
+          >
+            {showFull ? "Hide Full Advice" : "View Full Advice"}
+          </button>
+          {showFull && (
+            <div className="mt-3 space-y-3 text-xs text-gray-300 bg-white/5 border border-white/10 rounded-lg px-3 py-3">
+              {stock.full_advice && <p className="leading-relaxed">{stock.full_advice}</p>}
+              {stock.tips && stock.tips.length > 0 && (
+                <ul className="space-y-1">
+                  {stock.tips.map((tip, idx) => (
+                    <li key={`${stock.symbol}-tip-${idx}`} className="flex gap-2">
+                      <span className="text-green-400">•</span>
+                      <span>{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -399,3 +429,4 @@ function capitalize(value?: string) {
   if (!value) return "Unknown";
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
+
