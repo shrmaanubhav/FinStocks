@@ -133,7 +133,7 @@ export default function StockHoldings() {
                 NASDAQ
               </span>
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                Live prices via Yahoo Finance
+                Live market prices (weekly data)
               </span>
             </div>
           </div>
@@ -182,7 +182,7 @@ export default function StockHoldings() {
                 ? "text-green-600 dark:text-green-400"
                 : "text-red-600 dark:text-red-400"
             }`}>
-              Today&apos;s Change
+              Week&apos;s Change
             </p>
             <p className={`text-2xl font-bold ${
               totalChange >= 0

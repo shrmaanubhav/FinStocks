@@ -1,62 +1,68 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Yahoo Finance API endpoint for stock quotes
-const YAHOO_FINANCE_API = "https://query1.finance.yahoo.com/v7/finance/quote";
+// Your backend API endpoint
+const BACKEND_API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-// Fallback mock data when Yahoo Finance is unavailable
-const FALLBACK_STOCK_DATA: { [key: string]: Partial<YahooQuote> } = {
-  AAPL: { symbol: "AAPL", shortName: "Apple Inc.", regularMarketPrice: 178.25, regularMarketChange: 2.35, regularMarketChangePercent: 1.34 },
-  MSFT: { symbol: "MSFT", shortName: "Microsoft Corporation", regularMarketPrice: 415.50, regularMarketChange: -3.25, regularMarketChangePercent: -0.78 },
-  GOOGL: { symbol: "GOOGL", shortName: "Alphabet Inc.", regularMarketPrice: 142.80, regularMarketChange: 1.85, regularMarketChangePercent: 1.31 },
-  AMZN: { symbol: "AMZN", shortName: "Amazon.com Inc.", regularMarketPrice: 168.90, regularMarketChange: 4.20, regularMarketChangePercent: 2.55 },
-  NVDA: { symbol: "NVDA", shortName: "NVIDIA Corporation", regularMarketPrice: 825.30, regularMarketChange: 15.60, regularMarketChangePercent: 1.93 },
-  META: { symbol: "META", shortName: "Meta Platforms Inc.", regularMarketPrice: 445.20, regularMarketChange: -5.40, regularMarketChangePercent: -1.20 },
-  TSLA: { symbol: "TSLA", shortName: "Tesla Inc.", regularMarketPrice: 210.75, regularMarketChange: 8.30, regularMarketChangePercent: 4.10 },
-  NFLX: { symbol: "NFLX", shortName: "Netflix Inc.", regularMarketPrice: 595.40, regularMarketChange: 12.80, regularMarketChangePercent: 2.20 },
+// Stock name mapping for NASDAQ stocks
+const STOCK_NAMES: { [key: string]: string } = {
+  AAPL: "Apple Inc.",
+  MSFT: "Microsoft Corporation",
+  GOOGL: "Alphabet Inc. Class A",
+  GOOG: "Alphabet Inc. Class C",
+  AMZN: "Amazon.com Inc.",
+  NVDA: "NVIDIA Corporation",
+  META: "Meta Platforms Inc.",
+  TSLA: "Tesla Inc.",
+  NFLX: "Netflix Inc.",
+  AMD: "Advanced Micro Devices",
+  INTC: "Intel Corporation",
+  PYPL: "PayPal Holdings Inc.",
+  ADBE: "Adobe Inc.",
+  CRM: "Salesforce Inc.",
+  CSCO: "Cisco Systems Inc.",
+  QCOM: "Qualcomm Inc.",
+  AVGO: "Broadcom Inc.",
+  TXN: "Texas Instruments",
+  COST: "Costco Wholesale",
+  PEP: "PepsiCo Inc.",
 };
 
-
-interface YahooQuote {
-  symbol: string;
-  shortName?: string;
-  longName?: string;
-  regularMarketPrice?: number;
-  regularMarketChange?: number;
-  regularMarketChangePercent?: number;
-  regularMarketPreviousClose?: number;
-  regularMarketOpen?: number;
-  regularMarketDayHigh?: number;
-  regularMarketDayLow?: number;
-  regularMarketVolume?: number;
-  fiftyTwoWeekHigh?: number;
-  fiftyTwoWeekLow?: number;
-  marketCap?: number;
+interface StockDataPoint {
+  Date: string;
+  Open: number;
+  High: number;
+  Low: number;
+  Close: number;
+  Volume: number;
 }
 
-async function fetchYahooFinanceQuotes(symbols: string[]): Promise<YahooQuote[]> {
+interface BackendResponse {
+  stocks: {
+    [symbol: string]: StockDataPoint[];
+  };
+}
+
+async function fetchFromBackend(symbols: string[]): Promise<BackendResponse | null> {
   try {
-    const symbolsParam = symbols.join(",");
-    const response = await fetch(
-      `${YAHOO_FINANCE_API}?symbols=${symbolsParam}`,
-      {
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-          "Accept": "application/json",
-        },
-        cache: "no-store",
-      }
-    );
+    const response = await fetch(`${BACKEND_API}/api/myStocks`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ stocks: symbols }),
+      cache: "no-store",
+    });
 
     if (!response.ok) {
-      console.warn(`Yahoo Finance API returned ${response.status}, using fallback data`);
-      return [];
+      console.warn(`Backend API returned ${response.status}`);
+      return null;
     }
 
     const data = await response.json();
-    return data.quoteResponse?.result || [];
+    return data;
   } catch (error) {
-    console.error("Yahoo Finance fetch error:", error);
-    return [];
+    console.error("Backend API fetch error:", error);
+    return null;
   }
 }
 
@@ -71,66 +77,67 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch live data from Yahoo Finance
-    const yahooQuotes = await fetchYahooFinanceQuotes(symbols);
+    // Fetch data from your backend API
+    const backendData = await fetchFromBackend(symbols);
 
-    // Transform Yahoo Finance data to our format
+    // Transform backend data to our format
     const stocks = symbols.map((symbol: string) => {
       const upperSymbol = symbol.toUpperCase();
-      const quote = yahooQuotes.find(
-        (q) => q.symbol?.toUpperCase() === upperSymbol
-      );
+      const stockHistory = backendData?.stocks?.[upperSymbol];
 
-      if (quote) {
+      if (stockHistory && stockHistory.length > 0) {
+        // Get the latest data point (last in array = most recent week)
+        const latestData = stockHistory[stockHistory.length - 1];
+        // Get previous week's data for calculating change
+        const previousData = stockHistory.length > 1 
+          ? stockHistory[stockHistory.length - 2] 
+          : null;
+
+        const currentPrice = latestData.Close;
+        const previousClose = previousData?.Close || latestData.Open;
+        const dayChange = currentPrice - previousClose;
+        const changePercent = previousClose > 0 
+          ? ((dayChange / previousClose) * 100) 
+          : 0;
+
         return {
-          symbol: quote.symbol,
-          name: quote.shortName || quote.longName || symbol,
-          currentPrice: quote.regularMarketPrice || 0,
-          previousClose: quote.regularMarketPreviousClose || 0,
-          dayChange: quote.regularMarketChange || 0,
-          changePercent: quote.regularMarketChangePercent || 0,
-          dayHigh: quote.regularMarketDayHigh || 0,
-          dayLow: quote.regularMarketDayLow || 0,
-          volume: quote.regularMarketVolume || 0,
-          fiftyTwoWeekHigh: quote.fiftyTwoWeekHigh || 0,
-          fiftyTwoWeekLow: quote.fiftyTwoWeekLow || 0,
-          marketCap: quote.marketCap || 0,
+          symbol: upperSymbol,
+          name: STOCK_NAMES[upperSymbol] || upperSymbol,
+          currentPrice: currentPrice,
+          previousClose: previousClose,
+          dayChange: dayChange,
+          changePercent: changePercent,
+          dayHigh: latestData.High,
+          dayLow: latestData.Low,
+          weekOpen: latestData.Open,
+          volume: latestData.Volume,
+          lastUpdated: latestData.Date,
+          // Include historical data for charts (last 12 weeks)
+          history: stockHistory.slice(-12).map((point: StockDataPoint) => ({
+            date: point.Date,
+            open: point.Open,
+            high: point.High,
+            low: point.Low,
+            close: point.Close,
+            volume: point.Volume,
+          })),
         };
       }
 
-      // Try fallback data
-      const fallback = FALLBACK_STOCK_DATA[upperSymbol];
-      if (fallback) {
-        return {
-          symbol: fallback.symbol || upperSymbol,
-          name: fallback.shortName || upperSymbol,
-          currentPrice: fallback.regularMarketPrice || 0,
-          previousClose: 0,
-          dayChange: fallback.regularMarketChange || 0,
-          changePercent: fallback.regularMarketChangePercent || 0,
-          dayHigh: 0,
-          dayLow: 0,
-          volume: 0,
-          fiftyTwoWeekHigh: 0,
-          fiftyTwoWeekLow: 0,
-          marketCap: 0,
-        };
-      }
-
-      // Return placeholder if Yahoo Finance doesn't have data
+      // Return placeholder if no data available
       return {
         symbol: upperSymbol,
-        name: upperSymbol,
+        name: STOCK_NAMES[upperSymbol] || upperSymbol,
         currentPrice: 0,
         previousClose: 0,
         dayChange: 0,
         changePercent: 0,
         dayHigh: 0,
         dayLow: 0,
+        weekOpen: 0,
         volume: 0,
-        fiftyTwoWeekHigh: 0,
-        fiftyTwoWeekLow: 0,
-        marketCap: 0,
+        lastUpdated: null,
+        history: [],
         error: "Data not available",
       };
     });
@@ -138,7 +145,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       stocks,
       timestamp: new Date().toISOString(),
-      source: "Yahoo Finance",
+      source: "Backend API",
     });
   } catch (error) {
     console.error("Stock API error:", error);
