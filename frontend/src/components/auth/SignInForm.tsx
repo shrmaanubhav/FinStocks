@@ -38,8 +38,8 @@ export default function SignInForm() {
         throw new Error(data.error || "Failed to sign in");
       }
 
-      localStorage.setItem("finstock_user_id", data.user.id);
-      localStorage.setItem("finstock_user_email", data.user.email);
+      localStorage.setItem("user_id", data.user.id);
+      localStorage.setItem("user_email", data.user.email);
 
       if (data.user.onboardingCompleted) {
         localStorage.setItem("finstock_onboarding_completed", "true");

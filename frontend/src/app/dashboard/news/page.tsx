@@ -47,6 +47,7 @@ export default function NewsPage() {
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [portfolioData, setProfileData] = useState({})
   const cardRef = useRef<HTMLDivElement>(null);
 
   // Minimum swipe distance
@@ -58,17 +59,48 @@ export default function NewsPage() {
         setIsLoading(true);
         
         // Get user's portfolio stocks from localStorage
-        const portfolioData = localStorage.getItem("finStocksPortfolio");
-        let stockSymbols: string[] = [];
-        
-        if (portfolioData) {
-          const stocks = JSON.parse(portfolioData);
-          stockSymbols = stocks
-            .map((s: { symbol?: string }) => s.symbol)
-            .filter(Boolean)
-            .map((s: string) => s.toUpperCase());
+        const email = localStorage.getItem("user_email");
+        // will hold profile returned from getUser
+        let userProfile: any = null;
+        if (email) {
+          try {
+            // Use GET with query param to avoid sending a body with GET
+            const response = await fetch(
+              `/api/auth/getUser?email=${encodeURIComponent(email)}`
+            );
+
+            const data = await response.json();
+            console.log(data);
+            // route returns { success: true, user: { profile: ... } }
+            const profile = data.user?.profile ?? data.profile ?? {};
+            setProfileData(profile);
+            userProfile = profile;
+
+            if (!response.ok) {
+              throw new Error(data.error || "Failed to fetch user");
+            }
+          } catch (err) {
+            setError(err instanceof Error ? err.message : "Something went wrong");
+          }
+        } else {
+          // no email stored; skip user fetch
+          setProfileData({});
         }
-        
+
+        // Build stockSymbols from returned profile (or existing state)
+        let stockSymbols: string[] = [];
+        const sourceProfile = userProfile ?? (portfolioData as any) ?? null;
+        if (sourceProfile && Array.isArray(sourceProfile.holdings)) {
+          stockSymbols = Array.from(
+            new Set(
+              sourceProfile.holdings
+                .map((s: any) => String(s.symbol ?? "").trim().toUpperCase())
+                .filter(Boolean),
+            ),
+          );
+        }
+        console.log("stockSymbols:", stockSymbols);
+
         // Fallback to default stocks if no portfolio
         if (stockSymbols.length === 0) {
           stockSymbols = ["AAPL", "MSFT", "TSLA"];
