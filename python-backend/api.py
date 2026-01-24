@@ -156,6 +156,21 @@ class PortfolioAnalyzeRequest(BaseModel):
     stocks: List[str] = Field(default_factory=list)
 
 
+class StrategyMarketRequest(BaseModel):
+    stocks: List[str]
+    portfolio: str
+    user_query: Optional[str] = ""
+
+
+class StrategyFinalRequest(BaseModel):
+    stocks: List[str]
+    portfolio: str
+    user_query: Optional[str] = ""
+    market_news: str
+    macro_economics: str
+    market_trends: str
+
+
 class NewsStocksRequest(BaseModel):
     stocks: List[str]
     limit: Optional[int] = 10
@@ -599,6 +614,108 @@ async def get_strategy(payload: PortfolioAnalyzeRequest):
             "market_trends": summary_state.get("market_trends"),
             "strategy": summary_state.get("strategy"),
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/strategy/summary")
+async def get_strategy_summary(payload: PortfolioAnalyzeRequest):
+    """Generate portfolio summary quickly for incremental strategy loading"""
+    try:
+        payload_data = payload.model_dump() if hasattr(payload, "model_dump") else payload.dict()
+        holdings_symbols = [
+            (h.get("symbol") or "").strip().upper()
+            for h in (payload_data.get("holdings") or [])
+            if isinstance(h, dict)
+        ]
+        holdings_symbols = [s for s in holdings_symbols if s]
+        input_stocks = payload_data.get("stocks") or holdings_symbols
+        usage_state = UsageClassfier(
+            user_query=payload_data.get("lifestyle") or "",
+            usage="strategy",
+            age=payload_data.get("age"),
+            job_type=payload_data.get("jobType") or payload_data.get("job_type") or "",
+            job=payload_data.get("job") or "",
+            monthly_income=payload_data.get("monthlyIncome") or payload_data.get("monthly_income"),
+            side_income=payload_data.get("sideIncome") or payload_data.get("side_income"),
+            investment_goal=payload_data.get("investmentGoal") or payload_data.get("investment_goal") or "",
+            investment_duration=payload_data.get("investmentDuration") or payload_data.get("investment_duration") or "",
+            risk_preference=payload_data.get("riskPreference") or payload_data.get("risk_preference"),
+            investing_years=payload_data.get("investingYears") or payload_data.get("investing_years"),
+            retirement_age=payload_data.get("retirementAge") or payload_data.get("retirement_age"),
+            martial_status=payload_data.get("martial_status") or payload_data.get("maritalStatus") or "",
+            children=payload_data.get("children"),
+            stocks=input_stocks,
+        )
+
+        summary_state = portfolio_summariser(usage_state)
+        return {
+            "portfolio": summary_state.get("portfolio"),
+            "stocks": summary_state.get("stocks"),
+            "user_query": usage_state.user_query,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/strategy/market")
+async def get_strategy_market(payload: StrategyMarketRequest):
+    """Generate market data and trends for strategy"""
+    try:
+        state: AppState = {
+            "usage": "strategy",
+            "user_query": payload.user_query or "",
+            "stocks": payload.stocks,
+            "portfolio": payload.portfolio,
+            "news": "",
+            "news_dict": {},
+            "market_news": "",
+            "macro_economics": "",
+            "macro_economics_dict": {},
+            "market_trends": "",
+            "advice": "",
+            "strategy": "",
+            "final_proposal": "",
+        }
+
+        state = run_parallel_news_and_macro(state)
+        state = market_trends(state)
+
+        return {
+            "market_news": state.get("market_news"),
+            "macro_economics": state.get("macro_economics"),
+            "market_trends": state.get("market_trends"),
+            "stocks": state.get("stocks"),
+            "portfolio": state.get("portfolio"),
+            "user_query": state.get("user_query"),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/strategy/final")
+async def get_strategy_final(payload: StrategyFinalRequest):
+    """Generate the final strategy using precomputed summary + market data"""
+    try:
+        state: AppState = {
+            "usage": "strategy",
+            "user_query": payload.user_query or "",
+            "stocks": payload.stocks,
+            "portfolio": payload.portfolio,
+            "news": "",
+            "news_dict": {},
+            "market_news": payload.market_news,
+            "macro_economics": payload.macro_economics,
+            "macro_economics_dict": {},
+            "market_trends": payload.market_trends,
+            "advice": "",
+            "strategy": "",
+            "final_proposal": "",
+        }
+
+        state = strategy_generator(state)
+        
+        return {"strategy": state.get("strategy")}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -1,12 +1,68 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useUser } from "@/context/UserContext";
 
 type StrategyResponse = {
-  strategy: string;
+  strategy: StrategyData | string;
+};
+
+type StrategyData = {
+  investorProfile?: {
+    name?: string;
+    age?: number;
+    familyStatus?: string;
+    incomeRange?: string;
+    expenseRange?: string;
+    profession?: string;
+    riskProfile?: string;
+    experienceLevel?: string;
+  };
+  portfolio?: {
+    totalStocks?: number;
+    holdings?: {
+      symbol: string;
+      quantity?: number;
+      allocationPercent?: number;
+      trend?: "bullish" | "neutral" | "bearish";
+      sentimentScore?: number;
+    }[];
+  };
+  portfolioCharts?: {
+    allocationPieChart?: { symbol: string; value: number }[];
+    sentimentBarChart?: { symbol: string; score: number }[];
+  };
+  marketSentiment?: {
+    overallMood?: "Bullish" | "Neutral" | "Bearish";
+    stocks?: { symbol: string; trend?: "bullish" | "neutral" | "bearish"; confidence?: number }[];
+  };
+  recommendedPortfolio?: {
+    allocations?: { symbol: string; recommendedPercent: number }[];
+  };
+  portfolioComparison?: {
+    symbol: string;
+    currentPercent: number;
+    recommendedPercent: number;
+    change: number;
+  }[];
+  insights?: {
+    symbol: string;
+    action?: "increase" | "reduce" | "hold";
+    reasons?: string[];
+  }[];
+  riskAnalysis?: {
+    overallRisk?: "Low" | "Medium" | "High";
+    stockRisks?: { symbol: string; riskLevel?: "Low" | "Medium" | "High" }[];
+  };
+  forecast?: {
+    today?: { symbol: string; action: string }[];
+    "3days"?: { symbol: string; action: string }[];
+    "1week"?: { symbol: string; action: string }[];
+  };
+  actionPlan?: { symbol: string; action: string }[];
+  financialAdvice?: string[];
 };
 
 type AdviceResponse = {
@@ -23,7 +79,7 @@ type Message = {
 
 export default function StrategyPage() {
   const { userId } = useUser();
-  const [strategy, setStrategy] = useState("");
+  const [strategy, setStrategy] = useState<StrategyData | string>("");
   const [loadingStrategy, setLoadingStrategy] = useState(true);
 
   const [showAdvice, setShowAdvice] = useState(false);
@@ -46,16 +102,44 @@ export default function StrategyPage() {
         const profileData = await profileRes.json();
         const profile = profileData.profile;
 
-        console.log(profile)
+        const initial = buildInitialStrategyData(profile);
+        setStrategy(initial);
 
-        const res = await fetch("http://localhost:8000/api/strategy", {
+        const summaryRes = await fetch("http://localhost:8000/api/strategy/summary", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(profile),
         });
-        if (!res.ok) throw new Error();
-        const data: StrategyResponse = await res.json();
-        setStrategy(data.strategy);
+        if (!summaryRes.ok) throw new Error();
+        const summaryData = await summaryRes.json();
+
+        const marketRes = await fetch("http://localhost:8000/api/strategy/market", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            stocks: summaryData.stocks,
+            portfolio: summaryData.portfolio,
+            user_query: summaryData.user_query,
+          }),
+        });
+        if (!marketRes.ok) throw new Error();
+        const marketData = await marketRes.json();
+
+        const finalRes = await fetch("http://localhost:8000/api/strategy/final", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            stocks: marketData.stocks,
+            portfolio: marketData.portfolio,
+            user_query: marketData.user_query,
+            market_news: marketData.market_news,
+            macro_economics: marketData.macro_economics,
+            market_trends: marketData.market_trends,
+          }),
+        });
+        if (!finalRes.ok) throw new Error();
+        const finalData: StrategyResponse = await finalRes.json();
+        setStrategy(finalData.strategy);
       } catch {
         setStrategy("Unable to load strategy.");
       } finally {
@@ -154,12 +238,14 @@ export default function StrategyPage() {
               <div className="bg-gray-900/70 border border-white/10 rounded-2xl shadow-2xl p-8">
                 {loadingStrategy ? (
                   <p className="text-sm text-gray-400">Loading strategy…</p>
-                ) : (
+                ) : typeof strategy === "string" ? (
                   <div className="prose prose-invert prose-lg max-w-none">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {strategy}
                     </ReactMarkdown>
                   </div>
+                ) : (
+                  <StrategyDashboard data={strategy} />
                 )}
               </div>
             </div>
@@ -304,4 +390,506 @@ export default function StrategyPage() {
       </div>
     </div>
   );
+}
+
+function StrategyDashboard({ data }: { data: StrategyData }) {
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <InvestorProfileCard profile={data.investorProfile} />
+        </div>
+        <div className="space-y-6">
+          <HealthScoreCard />
+          <RiskMeterCard risk={data.riskAnalysis} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <PortfolioAllocationCard charts={data.portfolioCharts} />
+        <SentimentBarCard charts={data.portfolioCharts} sentiment={data.marketSentiment} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <PriceTrendCard holdings={data.portfolio?.holdings} />
+        <ComparisonCard comparison={data.portfolioComparison} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <StockCardsSection
+          holdings={data.portfolio?.holdings}
+          risk={data.riskAnalysis}
+          insights={data.insights}
+          sentiment={data.marketSentiment}
+        />
+        <RecommendedAllocationCard data={data.recommendedPortfolio} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <InsightsPanel insights={data.insights} />
+        <AIRecommendationPanel actionPlan={data.actionPlan} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ForecastCard forecast={data.forecast} />
+        <ActionPlanCard actionPlan={data.actionPlan} />
+      </div>
+
+      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <FinancialAdviceCard advice={data.financialAdvice} />
+        <ComponentMapCard />
+      </div> */}
+    </div>
+  );
+}
+
+function CardShell({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="bg-gray-900/60 border border-white/10 rounded-2xl p-5 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-white">{title}</h3>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function HealthScoreCard() {
+  const score = 72;
+  return (
+    <CardShell title="Portfolio Health Score">
+      <div className="flex items-center justify-between">
+        <span className="text-2xl font-semibold text-white">{score}</span>
+        <span className="text-xs text-gray-400">Gauge</span>
+      </div>
+      <div className="h-2 rounded-full bg-white/10">
+        <div className="h-2 rounded-full bg-emerald-500" style={{ width: `${score}%` }} />
+      </div>
+      <p className="text-xs text-gray-400">Balanced risk with growth tilt.</p>
+    </CardShell>
+  );
+}
+
+function InvestorProfileCard({ profile }: { profile?: StrategyData["investorProfile"] }) {
+  return (
+    <CardShell title="Investor Profile">
+      <div className="grid grid-cols-2 gap-4 text-xs text-gray-300">
+        <ProfileItem label="Name" value={profile?.name || "N/A"} />
+        <ProfileItem label="Age" value={profile?.age?.toString() || "N/A"} />
+        <ProfileItem label="Family" value={profile?.familyStatus || "N/A"} />
+        <ProfileItem label="Profession" value={profile?.profession || "N/A"} />
+        <ProfileItem label="Income" value={profile?.incomeRange || "N/A"} />
+        <ProfileItem label="Expenses" value={profile?.expenseRange || "N/A"} />
+        <ProfileItem label="Risk Profile" value={profile?.riskProfile || "N/A"} />
+        <ProfileItem label="Experience" value={profile?.experienceLevel || "N/A"} />
+      </div>
+    </CardShell>
+  );
+}
+
+function ProfileItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="space-y-1">
+      <p className="text-[11px] uppercase tracking-wide text-gray-500">{label}</p>
+      <p className="text-sm text-white">{value}</p>
+    </div>
+  );
+}
+
+function RiskMeterCard({ risk }: { risk?: StrategyData["riskAnalysis"] }) {
+  const level = risk?.overallRisk || "Medium";
+  const color =
+    level === "Low"
+      ? "bg-green-500/20 text-green-300"
+      : level === "High"
+      ? "bg-red-500/20 text-red-300"
+      : "bg-yellow-500/20 text-yellow-300";
+
+  return (
+    <CardShell title="Portfolio Risk">
+      <div className="flex items-center justify-between">
+        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${color}`}>
+          {level}
+        </span>
+        <span className="text-xs text-gray-400">Risk Meter</span>
+      </div>
+      <div className="space-y-2 text-xs text-gray-300">
+        {(risk?.stockRisks || []).slice(0, 4).map((item) => (
+          <div key={item.symbol} className="flex items-center justify-between">
+            <span>{item.symbol}</span>
+            <span className="text-gray-400">{item.riskLevel || "N/A"}</span>
+          </div>
+        ))}
+      </div>
+    </CardShell>
+  );
+}
+
+function InsightsPanel({ insights }: { insights?: StrategyData["insights"] }) {
+  return (
+    <CardShell title="Insights Panel">
+      <div className="space-y-3 text-xs text-gray-300">
+        {(insights || []).map((item) => (
+          <div key={item.symbol} className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-white">{item.symbol}</span>
+              <span className={actionToColor(item.action || "hold")}>{item.action || "hold"}</span>
+            </div>
+            {(item.reasons || []).slice(0, 3).map((reason, idx) => (
+              <div key={`${item.symbol}-insight-${idx}`} className="flex gap-2 text-gray-400">
+                <span className="text-brand-400">•</span>
+                <span>{reason}</span>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </CardShell>
+  );
+}
+
+function AIRecommendationPanel({ actionPlan }: { actionPlan?: StrategyData["actionPlan"] }) {
+  return (
+    <CardShell title="AI Recommendation Panel">
+      <div className="space-y-2 text-xs text-gray-300">
+        {(actionPlan || []).slice(0, 4).map((item) => (
+          <div key={item.symbol} className="flex items-start gap-2">
+            <span className="text-green-400">•</span>
+            <span>{item.symbol}: {item.action}</span>
+          </div>
+        ))}
+      </div>
+    </CardShell>
+  );
+}
+
+function PortfolioAllocationCard({ charts }: { charts?: StrategyData["portfolioCharts"] }) {
+  const allocations = charts?.allocationPieChart || [];
+  return (
+    <CardShell title="Portfolio Allocation (Pie)">
+      <div className="space-y-3">
+        {allocations.map((item) => (
+          <div key={item.symbol} className="space-y-1">
+            <div className="flex items-center justify-between text-xs text-gray-300">
+              <span>{item.symbol}</span>
+              <span>{item.value}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-white/10">
+              <div
+                className="h-2 rounded-full bg-brand-500"
+                style={{ width: `${clampPercent(item.value)}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </CardShell>
+  );
+}
+
+function SentimentBarCard({
+  charts,
+  sentiment,
+}: {
+  charts?: StrategyData["portfolioCharts"];
+  sentiment?: StrategyData["marketSentiment"];
+}) {
+  const bars = charts?.sentimentBarChart || [];
+  return (
+    <CardShell title="Market Sentiment (Bar)">
+      <div className="flex items-center justify-between text-xs text-gray-400">
+        <span>Overall Mood</span>
+        <span>{sentiment?.overallMood || "Neutral"}</span>
+      </div>
+      <div className="space-y-3">
+        {bars.map((item) => (
+          <div key={item.symbol} className="space-y-1">
+            <div className="flex items-center justify-between text-xs text-gray-300">
+              <span>{item.symbol}</span>
+              <span>{item.score}</span>
+            </div>
+            <div className="h-2 rounded-full bg-white/10">
+              <div
+                className="h-2 rounded-full bg-emerald-500"
+                style={{ width: `${clampPercent(Math.abs(item.score) * 100)}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </CardShell>
+  );
+}
+
+function PriceTrendCard({ holdings }: { holdings?: StrategyData["portfolio"]["holdings"] }) {
+  return (
+    <CardShell title="Price Trend (Line)">
+      <div className="space-y-3 text-xs text-gray-300">
+        {(holdings || []).map((item) => (
+          <div key={item.symbol} className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span>{item.symbol}</span>
+              <span className="text-gray-400">{item.trend || "neutral"}</span>
+            </div>
+            <div className="h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[11px] text-gray-500">
+              Trend line data not provided
+            </div>
+          </div>
+        ))}
+      </div>
+    </CardShell>
+  );
+}
+
+function RecommendedAllocationCard({ data }: { data?: StrategyData["recommendedPortfolio"] }) {
+  return (
+    <CardShell title="Recommended Allocation">
+      <div className="space-y-3">
+        {(data?.allocations || []).map((item) => (
+          <div key={item.symbol} className="space-y-1">
+            <div className="flex items-center justify-between text-xs text-gray-300">
+              <span>{item.symbol}</span>
+              <span>{item.recommendedPercent}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-white/10">
+              <div
+                className="h-2 rounded-full bg-emerald-500"
+                style={{ width: `${clampPercent(item.recommendedPercent)}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </CardShell>
+  );
+}
+
+function StockCardsSection({
+  holdings,
+  risk,
+  insights,
+  sentiment,
+}: {
+  holdings?: StrategyData["portfolio"]["holdings"];
+  risk?: StrategyData["riskAnalysis"];
+  insights?: StrategyData["insights"];
+  sentiment?: StrategyData["marketSentiment"];
+}) {
+  const riskMap = new Map((risk?.stockRisks || []).map((r) => [r.symbol, r.riskLevel]));
+  const insightMap = new Map((insights || []).map((i) => [i.symbol, i]));
+  const sentimentMap = new Map((sentiment?.stocks || []).map((s) => [s.symbol, s]));
+
+  return (
+    <CardShell title="Stock Cards">
+      <div className="space-y-4">
+        {(holdings || []).map((holding) => (
+          <div key={holding.symbol} className="border border-white/10 rounded-xl p-4 bg-black/20 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-white">{holding.symbol}</p>
+                <p className="text-xs text-gray-400">Qty: {holding.quantity || 0}</p>
+              </div>
+              <span className={`text-xs px-2 py-1 rounded-full ${trendToColor(holding.trend)}`}>
+                {holding.trend || "neutral"}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-xs text-gray-300">
+              <Badge label="Risk" value={riskMap.get(holding.symbol) || "N/A"} />
+              <Badge label="Sentiment" value={sentimentMap.get(holding.symbol)?.confidence?.toFixed(2) || "N/A"} />
+              <Badge label="Allocation" value={`${holding.allocationPercent || 0}%`} />
+            </div>
+            <div className="text-xs text-gray-300 space-y-1">
+              {(insightMap.get(holding.symbol)?.reasons || []).slice(0, 3).map((reason, idx) => (
+                <div key={`${holding.symbol}-reason-${idx}`} className="flex gap-2">
+                  <span className="text-brand-400">•</span>
+                  <span>{reason}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </CardShell>
+  );
+}
+
+function ComparisonCard({ comparison }: { comparison?: StrategyData["portfolioComparison"] }) {
+  return (
+    <CardShell title="Current vs Recommended">
+      <div className="space-y-3">
+        {(comparison || []).map((item) => (
+          <div key={item.symbol} className="space-y-1">
+            <div className="flex items-center justify-between text-xs text-gray-300">
+              <span>{item.symbol}</span>
+              <span>{item.change > 0 ? `+${item.change}%` : `${item.change}%`}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-[11px] text-gray-400">
+              <div className="space-y-1">
+                <span>Current {item.currentPercent}%</span>
+                <div className="h-2 rounded-full bg-white/10">
+                  <div className="h-2 rounded-full bg-gray-400/60" style={{ width: `${clampPercent(item.currentPercent)}%` }} />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <span>Recommended {item.recommendedPercent}%</span>
+                <div className="h-2 rounded-full bg-white/10">
+                  <div className="h-2 rounded-full bg-brand-500" style={{ width: `${clampPercent(item.recommendedPercent)}%` }} />
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </CardShell>
+  );
+}
+
+function ForecastCard({ forecast }: { forecast?: StrategyData["forecast"] }) {
+  return (
+    <CardShell title="Timeline Forecast">
+      <div className="grid grid-cols-3 gap-4 text-xs text-gray-300">
+        <ForecastColumn label="Today" items={forecast?.today} />
+        <ForecastColumn label="3 Days" items={forecast?.["3days"]} />
+        <ForecastColumn label="1 Week" items={forecast?.["1week"]} />
+      </div>
+    </CardShell>
+  );
+}
+
+function ForecastColumn({ label, items }: { label: string; items?: { symbol: string; action: string }[] }) {
+  return (
+    <div className="space-y-2">
+      <p className="text-[11px] uppercase text-gray-500">{label}</p>
+      {(items || []).map((item) => (
+        <div key={`${label}-${item.symbol}`} className="flex items-center justify-between">
+          <span>{item.symbol}</span>
+          <span className={actionToColor(item.action)}>{item.action}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ActionPlanCard({ actionPlan }: { actionPlan?: StrategyData["actionPlan"] }) {
+  return (
+    <CardShell title="Action Plan">
+      <div className="space-y-2 text-xs text-gray-300">
+        {(actionPlan || []).map((item) => (
+          <div key={item.symbol} className="flex items-start gap-2">
+            <span className="text-brand-400">•</span>
+            <span>{item.symbol}: {item.action}</span>
+          </div>
+        ))}
+      </div>
+    </CardShell>
+  );
+}
+
+function FinancialAdviceCard({ advice }: { advice?: StrategyData["financialAdvice"] }) {
+  return (
+    <CardShell title="Investor Advice">
+      <div className="space-y-2 text-xs text-gray-300">
+        {(advice || []).map((item, idx) => (
+          <div key={`advice-${idx}`} className="flex items-start gap-2">
+            <span className="text-green-400">•</span>
+            <span>{item}</span>
+          </div>
+        ))}
+      </div>
+    </CardShell>
+  );
+}
+
+function ComponentMapCard() {
+  const items = [
+    "Investor Profile Card → investorProfile",
+    "Portfolio Allocation (Pie) → portfolioCharts.allocationPieChart",
+    "Sentiment Bar → portfolioCharts.sentimentBarChart",
+    "Stock Cards → portfolio.holdings + insights + riskAnalysis",
+    "Comparison Chart → portfolioComparison",
+    "Forecast Timeline → forecast",
+    "Action Plan Panel → actionPlan",
+    "Investor Advice → financialAdvice",
+  ];
+
+  return (
+    <CardShell title="JSON → UI Map">
+      <div className="space-y-2 text-xs text-gray-300">
+        {items.map((item) => (
+          <div key={item} className="flex items-start gap-2">
+            <span className="text-brand-400">•</span>
+            <span>{item}</span>
+          </div>
+        ))}
+      </div>
+    </CardShell>
+  );
+}
+
+function Badge({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-gray-300">
+      <span className="text-gray-500">{label}: </span>
+      {value}
+    </div>
+  );
+}
+
+function clampPercent(value?: number) {
+  if (typeof value !== "number" || Number.isNaN(value)) return 0;
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function trendToColor(trend?: string) {
+  if (trend === "bullish") return "bg-green-500/15 text-green-300";
+  if (trend === "bearish") return "bg-red-500/15 text-red-300";
+  return "bg-yellow-500/15 text-yellow-300";
+}
+
+function actionToColor(action: string) {
+  const normalized = action.toLowerCase();
+  if (normalized.includes("buy") || normalized.includes("increase")) return "text-green-300";
+  if (normalized.includes("sell") || normalized.includes("reduce")) return "text-red-300";
+  return "text-yellow-300";
+}
+
+function buildInitialStrategyData(profile: any): StrategyData {
+  const holdings = Array.isArray(profile?.holdings) ? profile.holdings : [];
+  const totalQty = holdings.reduce((sum: number, h: any) => sum + (h.quantity || 0), 0) || 1;
+  const allocation = holdings.map((h: any) => ({
+    symbol: String(h.symbol || "").toUpperCase(),
+    quantity: h.quantity || 0,
+    allocationPercent: Math.round(((h.quantity || 0) / totalQty) * 100),
+    trend: "neutral" as const,
+    sentimentScore: 0,
+  }));
+
+  return {
+    investorProfile: {
+      name: profile?.name,
+      age: profile?.age,
+      familyStatus: profile?.maritalStatus
+        ? `${profile.maritalStatus} with ${profile.children || 0} children`
+        : undefined,
+      incomeRange: profile?.incomeRange,
+      expenseRange: profile?.expenditureRange,
+      profession: profile?.job || profile?.jobType,
+      riskProfile: profile?.riskPreference ? "Moderate" : undefined,
+      experienceLevel: profile?.investingYears ? "Experienced" : "Beginner",
+    },
+    portfolio: {
+      totalStocks: holdings.length,
+      holdings: allocation,
+    },
+    portfolioCharts: {
+      allocationPieChart: allocation.map((h) => ({
+        symbol: h.symbol,
+        value: h.allocationPercent || 0,
+      })),
+      sentimentBarChart: allocation.map((h) => ({
+        symbol: h.symbol,
+        score: 0,
+      })),
+    },
+  };
 }
