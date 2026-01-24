@@ -16,6 +16,9 @@ from datetime import datetime
 import uuid
 from services.portfolio import portfolio_summary_from_form, portfolio_summariser
 from services.news import news_extractor
+from services.stock_extracter import stock_extractor
+from services.parallel import run_parallel_news_and_macro
+from services.advice import advice as advice_generator
 from classes import UsageClassfier
 
 load_dotenv()
@@ -151,9 +154,14 @@ class PortfolioAnalyzeRequest(BaseModel):
     stocks: List[str] = Field(default_factory=list)
 
 
-class NewsRequest(BaseModel):
+class NewsStocksRequest(BaseModel):
     stocks: List[str]
-    limit: Optional[int] = 5
+    limit: Optional[int] = 10
+
+
+class AdviceRequest(BaseModel):
+    query: str
+
 
 
 # ============== In-Memory Storage (Replace with Supabase in production) ==============
@@ -408,30 +416,31 @@ async def analyze_portfolio(payload: PortfolioAnalyzeRequest):
 # ---------- News Endpoints ----------
 
 @app.post("/api/news")
-async def get_news_for_stocks(payload: NewsRequest):
-    """Get news for specified stocks from user's portfolio"""
-    from services.news import get_news
-    
+async def get_hinglish_news(payload: NewsStocksRequest):
+    """Get news summaries per stock symbol"""
     stocks = [s.strip().upper() for s in payload.stocks if s and s.strip()]
     if not stocks:
         raise HTTPException(status_code=400, detail="stocks must be a non-empty array of symbols")
-    
-    try:
-        # Get news for each stock
-        news_data = get_news(stocks)
-        return {"stocks": news_data}
-    except Exception as e:
-        # Fallback to mock data if news service fails
-        mock_news = {}
-        for stock in stocks:
-            mock_news[stock] = [
-                f"Latest market update for {stock}: Strong momentum continues in the market.",
-                f"{stock} shows resilience amid market volatility.",
-                f"Analysts remain optimistic about {stock}'s growth potential.",
-                f"Trading volume increases for {stock} as investors show confidence.",
-                f"{stock} continues to attract institutional interest."
-            ][:payload.limit]
-        return {"stocks": mock_news}
+    print(stocks)
+    state: AppState = {
+        "usage": "invalid",
+        "user_query": "",
+        "stocks": stocks,
+        "portfolio": "",
+        "news": "",
+        "news_dict": {},
+        "market_news": "",
+        "macro_economics": "",
+        "macro_economics_dict": {},
+        "market_trends": "",
+        "advice": "",
+        "strategy": "",
+        "final_proposal": "",
+    }
+
+    state = news_extractor(state, limit=payload.limit or 5)
+    print(state['news_dict'])
+    return {"stocks": state.get("news_dict", {})}
 
 
 @app.get("/api/news/hinglish", response_model=HinglishNewsResponse)
@@ -508,17 +517,39 @@ async def get_stock_news(symbol: str):
 
 # ---------- Advice & Strategy Endpoints ----------
 
-@app.get("/api/advice")
-async def get_advice(userId: str):
-    """Get AI-generated advice using LangGraph pipeline"""
-    
-    # TODO: Integrate with the existing LangGraph pipeline
-    # This would call the advice generation workflow
-    
-    return {
-        "advice": "Based on your portfolio analysis, consider rebalancing your IT sector exposure. The current allocation of 15% is slightly high given the sector headwinds. You might want to diversify into defensive sectors like FMCG or Pharma.",
-        "type": "advice"
-    }
+@app.post("/api/advice")
+async def get_advice(payload: AdviceRequest):
+    """Get AI-generated advice using the stock extractor + pipeline"""
+    try:
+        usage_state = UsageClassfier(user_query=payload.query.strip())
+        usage_state = stock_extractor(usage_state)
+
+        state: AppState = {
+            "usage": "advice",
+            "user_query": usage_state.user_query,
+            "stocks": usage_state.stocks or [],
+            "portfolio": "",
+            "news": "",
+            "news_dict": {},
+            "market_news": "",
+            "macro_economics": "",
+            "macro_economics_dict": {},
+            "market_trends": "",
+            "advice": "",
+            "strategy": "",
+            "final_proposal": "",
+        }
+
+        state = run_parallel_news_and_macro(state)
+        state = advice_generator(state)
+
+        return {
+            "stocks": state.get("stocks", []),
+            "advice": state.get("advice", ""),
+            "type": "advice",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/api/strategy")

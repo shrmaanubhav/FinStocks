@@ -12,8 +12,6 @@ def advice(state: AppState) -> AppState:
 
     prompt = f"""
 
-
-
     You are a leading financial strategist with deep domain expertise in equity markets, valuation modeling, macroeconomic forecasting, and technical analysis. You are tasked with delivering a thorough investment analysis of the stocks {state['stocks']} based on the full set of financial data, technical indicators, and recent performance.
 
     Economic Data for each Stock:
