@@ -18,6 +18,7 @@ export default function Page() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     document.documentElement.style.overflow = "hidden";
@@ -26,6 +27,31 @@ export default function Page() {
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
     };
+  }, []);
+
+  useEffect(() => {
+    const storedUserId = localStorage.getItem("user_id");
+    setUserId(storedUserId);
+
+    if (!storedUserId) return;
+
+    const loadChats = async () => {
+      try {
+        const res = await fetch(`/api/advice-chat?userId=${storedUserId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const loadedMessages: Message[] = [];
+        (data.chats || []).forEach((chat: { query: string; advice: string }) => {
+          loadedMessages.push({ role: "user", content: chat.query });
+          loadedMessages.push({ role: "bot", content: chat.advice });
+        });
+        setMessages(loadedMessages);
+      } catch (error) {
+        console.warn("Failed to load advice chats:", error);
+      }
+    };
+
+    loadChats();
   }, []);
 
   const sendMessage = async () => {
@@ -52,6 +78,19 @@ export default function Page() {
         ...p,
         { role: "bot", content: data.advice, stocks: data.stocks },
       ]);
+
+      if (userId) {
+        await fetch("/api/advice-chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            query,
+            advice: data.advice,
+            timestamp: new Date().toISOString(),
+          }),
+        });
+      }
     } catch {
       setMessages((p) => [
         ...p,
