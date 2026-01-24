@@ -1,8 +1,21 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import dynamic from "next/dynamic";
+import { ApexOptions } from "apexcharts";
 import { useUser } from "@/context/UserContext";
 import { Holding } from "@/context/UserContext";
+
+const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
+
+interface StockHistoryPoint {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
 
 interface StockData extends Holding {
   changePercent?: number;
@@ -10,6 +23,7 @@ interface StockData extends Holding {
   dayChange?: number;
   dayHigh?: number;
   dayLow?: number;
+  history?: StockHistoryPoint[];
 }
 
 export default function StockHoldings() {
@@ -19,6 +33,7 @@ export default function StockHoldings() {
   const [totalValue, setTotalValue] = useState(0);
   const [totalChange, setTotalChange] = useState(0);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [selectedStock, setSelectedStock] = useState<StockData | null>(null);
 
   const fetchStockData = useCallback(async (holdings: Holding[]) => {
     try {
@@ -46,11 +61,19 @@ export default function StockHoldings() {
             dayChange: (holding.quantity || 0) * (stockInfo?.dayChange || 0),
             dayHigh: stockInfo?.dayHigh || 0,
             dayLow: stockInfo?.dayLow || 0,
+            history: stockInfo?.history || [],
           };
         });
 
         setStocks(enrichedStocks);
         setLastUpdated(new Date());
+        setSelectedStock((prev) => {
+          if (!prev) return enrichedStocks[0] || null;
+          const match = enrichedStocks.find(
+            (item) => item.symbol?.toUpperCase() === prev.symbol?.toUpperCase()
+          );
+          return match || prev;
+        });
 
         // Calculate totals
         const total = enrichedStocks.reduce((sum, stock) => sum + (stock.value || 0), 0);
@@ -88,6 +111,60 @@ export default function StockHoldings() {
       fetchStockData(userProfile.holdings);
     }
   };
+
+  const chartData = useMemo(() => {
+    const history = selectedStock?.history || [];
+    return {
+      categories: history.map((point) => point.date),
+      series: [
+        {
+          name: "Close",
+          data: history.map((point) => Number(point.close)),
+        },
+      ],
+    };
+  }, [selectedStock]);
+
+  const chartOptions: ApexOptions = useMemo(() => {
+    return {
+      chart: {
+        type: "area",
+        height: 320,
+        toolbar: { show: false },
+        zoom: { enabled: false },
+      },
+      colors: ["#2563eb"],
+      stroke: { curve: "smooth", width: 2 },
+      fill: {
+        type: "gradient",
+        gradient: {
+          shadeIntensity: 1,
+          opacityFrom: 0.4,
+          opacityTo: 0.05,
+          stops: [0, 90, 100],
+        },
+      },
+      dataLabels: { enabled: false },
+      xaxis: {
+        categories: chartData.categories,
+        labels: { rotate: -45, hideOverlappingLabels: true },
+      },
+      yaxis: {
+        labels: {
+          formatter: (value) => `$${value.toFixed(2)}`,
+        },
+      },
+      tooltip: {
+        x: {
+          formatter: (value) => String(value),
+        },
+      },
+      grid: {
+        borderColor: "#e5e7eb",
+        strokeDashArray: 4,
+      },
+    };
+  }, [chartData.categories]);
 
   if (isLoading || stocksLoading) {
     return (
@@ -230,7 +307,8 @@ export default function StockHoldings() {
             {stocks.map((stock) => (
               <tr
                 key={stock.symbol}
-                className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer"
+                onClick={() => setSelectedStock(stock)}
               >
                 <td className="py-4 px-4">
                   <div className="flex items-center gap-3">
@@ -274,6 +352,40 @@ export default function StockHoldings() {
           </tbody>
         </table>
       </div>
+
+      {/* Selected Stock Chart */}
+      {selectedStock && (
+        <div className="mt-8 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-dark p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                {selectedStock.symbol} Price History
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {selectedStock.name}
+              </p>
+            </div>
+            <button
+              onClick={() => setSelectedStock(null)}
+              className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              Close
+            </button>
+          </div>
+          {selectedStock.history && selectedStock.history.length > 0 ? (
+            <ReactApexChart
+              options={chartOptions}
+              series={chartData.series}
+              type="area"
+              height={320}
+            />
+          ) : (
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              No historical data available for this stock.
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
