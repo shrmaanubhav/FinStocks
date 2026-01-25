@@ -248,7 +248,7 @@ export default function StrategyPage() {
                 {loadingStrategy ? (
                   <p className="text-sm text-gray-600 dark:text-gray-400">Loading strategy…</p>
                 ) : typeof strategy === "string" ? (
-                  <div className="prose dark:prose-invert prose-lg max-w-none">
+                  <div className="prose prose-slate prose-lg max-w-none text-gray-900 dark:text-white dark:prose-invert">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {strategy}
                     </ReactMarkdown>

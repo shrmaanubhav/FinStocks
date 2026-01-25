@@ -211,8 +211,8 @@ export default function LandingPage() {
 
       {/* MacBook Scroll Section */}
       <motion.section 
-        className={`relative overflow-hidden transition-all duration-700 ease-out -translate-y-60 ${
-          featuresRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+        className={`relative overflow-hidden transition-all duration-700 ease-out translate-y-[-200px]  ${
+          featuresRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
         initial={{ opacity: 0, y: 60 }}
         animate={featuresRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }}
