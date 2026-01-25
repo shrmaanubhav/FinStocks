@@ -439,7 +439,7 @@ export default function NewsPage() {
 
                     {/* News Content */}
                     <div className="flex-1 flex items-center">
-                      <p className="text-2xl md:text-3xl font-medium leading-relaxed text-gray-900">
+                      <p className="font-medium leading-relaxed text-gray-900">
                         {currentCard.headline}
                       </p>
                     </div>
