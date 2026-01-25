@@ -15,7 +15,7 @@ export default function AuthLayout({
       <ThemeProvider>
         <div className="relative flex lg:flex-row w-full h-screen justify-center flex-col  dark:bg-gray-900 sm:p-0">
           {children}
-          <div className="lg:w-1/2 w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 lg:grid items-center hidden relative overflow-hidden">
+          <div className="lg:w-1/2 w-full h-full bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 lg:grid items-center hidden relative overflow-hidden">
             {/* Background Effects */}
             <div className="absolute inset-0">
               <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-500/20 rounded-full blur-3xl animate-pulse" />
@@ -34,7 +34,7 @@ export default function AuthLayout({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
               </div>
-              <span className="text-4xl bg-gradient-to-r from-white to-gray-300 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+              <span className="text-4xl bg-linear-to-r from-white to-gray-300 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
                 FinStocks
               </span>
             </div>

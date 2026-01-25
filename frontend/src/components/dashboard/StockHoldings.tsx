@@ -206,7 +206,7 @@ export default function StockHoldings() {
 
   if (isLoading || stocksLoading) {
     return (
-      <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-dark p-6 md:p-8">
+      <div className="rounded-3xl border-[0.5px] border-[#FFD7001A] bg-transparent dark:bg-transparent p-6 md:p-8">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
           <div className="space-y-3">
@@ -221,7 +221,7 @@ export default function StockHoldings() {
 
   if (!stocks || stocks.length === 0) {
     return (
-      <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-dark p-6 md:p-8">
+      <div className="rounded-3xl border-[0.5px] border-[#FFD7001A] bg-transparent dark:bg-transparent p-6 md:p-8">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
           Your Holdings
         </h2>
@@ -235,7 +235,7 @@ export default function StockHoldings() {
   }
 
   return (
-    <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-dark p-6 md:p-8">
+    <div className="rounded-3xl border-[0.5px] border-[#FFD7001A] bg-transparent dark:bg-transparent p-6 md:p-8">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
@@ -278,7 +278,7 @@ export default function StockHoldings() {
 
         {/* Portfolio Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-4 border border-blue-200 dark:border-blue-800">
+          <div className="rounded-2xl bg-linear-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-4 border border-blue-200 dark:border-blue-800">
             <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-1">
               Total Value
             </p>
@@ -289,8 +289,8 @@ export default function StockHoldings() {
 
           <div className={`rounded-2xl p-4 border ${
             totalChange >= 0
-              ? "bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800"
-              : "bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-800"
+              ? "bg-linear-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800"
+              : "bg-linear-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-800"
           }`}>
             <p className={`text-sm font-medium mb-1 ${
               totalChange >= 0
@@ -308,7 +308,7 @@ export default function StockHoldings() {
             </p>
           </div>
 
-          <div className="rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-4 border border-purple-200 dark:border-purple-800">
+          <div className="rounded-2xl bg-linear-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-4 border border-purple-200 dark:border-purple-800">
             <p className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">
               Total Holdings
             </p>
@@ -350,7 +350,7 @@ export default function StockHoldings() {
               >
                 <td className="py-4 px-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-500/20 to-purple-500/20 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-lg bg-linear-to-br from-brand-500/20 to-purple-500/20 flex items-center justify-center">
                       <span className="text-brand-600 dark:text-brand-400 font-bold text-sm">
                         {stock.symbol?.slice(0, 2)}
                       </span>
@@ -359,7 +359,7 @@ export default function StockHoldings() {
                       <p className="font-semibold text-gray-900 dark:text-white">
                         {stock.symbol}
                       </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 max-w-[200px] truncate">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 max-w-50 truncate">
                         {stock.name}
                       </p>
                     </div>

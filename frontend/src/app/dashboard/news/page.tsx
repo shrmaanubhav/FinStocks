@@ -14,15 +14,15 @@ interface NewsCard {
 }
 
 const STOCK_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  AAPL: { bg: "bg-gradient-to-br from-gray-900 to-gray-800", text: "text-white", border: "border-gray-700" },
-  MSFT: { bg: "bg-gradient-to-br from-blue-900 to-blue-800", text: "text-white", border: "border-blue-700" },
-  TSLA: { bg: "bg-gradient-to-br from-red-900 to-red-800", text: "text-white", border: "border-red-700" },
-  GOOGL: { bg: "bg-gradient-to-br from-green-900 to-green-800", text: "text-white", border: "border-green-700" },
-  AMZN: { bg: "bg-gradient-to-br from-orange-900 to-orange-800", text: "text-white", border: "border-orange-700" },
-  META: { bg: "bg-gradient-to-br from-indigo-900 to-indigo-800", text: "text-white", border: "border-indigo-700" },
-  NVDA: { bg: "bg-gradient-to-br from-emerald-900 to-emerald-800", text: "text-white", border: "border-emerald-700" },
-  NFLX: { bg: "bg-gradient-to-br from-rose-900 to-rose-800", text: "text-white", border: "border-rose-700" },
-  DEFAULT: { bg: "bg-gradient-to-br from-purple-900 to-purple-800", text: "text-white", border: "border-purple-700" },
+  AAPL: { bg: "bg-slate-100", text: "text-slate-700", border: "border-slate-200" },
+  MSFT: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200" },
+  TSLA: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" },
+  GOOGL: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200" },
+  AMZN: { bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-200" },
+  META: { bg: "bg-indigo-50", text: "text-indigo-700", border: "border-indigo-200" },
+  NVDA: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" },
+  NFLX: { bg: "bg-rose-50", text: "text-rose-700", border: "border-rose-200" },
+  DEFAULT: { bg: "bg-gray-50", text: "text-gray-600", border: "border-gray-200" },
 };
 
 const STOCK_ICONS: Record<string, string> = {
@@ -343,7 +343,7 @@ export default function NewsPage() {
                       onClick={() => firstIndex >= 0 && setCurrentIndex(firstIndex)}
                       className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${
                         currentCard?.stock === stock
-                          ? `${color.bg} ${color.border} text-white`
+                          ? `${color.bg} ${color.border} text-gray-800`
                           : "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                       }`}
                     >
@@ -427,8 +427,8 @@ export default function NewsPage() {
                       <div className="flex items-center gap-3">
                         <span className="text-4xl">{stockIcon}</span>
                         <div>
-                          <span className="text-2xl font-bold text-white">{currentCard.stock}</span>
-                          <p className="text-white/60 text-sm">Portfolio Stock</p>
+                          <span className="text-2xl font-bold text-gray-900">{currentCard.stock}</span>
+                          <p className="text-sm text-gray-700">Portfolio Stock</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full">
@@ -439,7 +439,7 @@ export default function NewsPage() {
 
                     {/* News Content */}
                     <div className="flex-1 flex items-center">
-                      <p className={`text-2xl md:text-3xl font-medium leading-relaxed ${stockColor.text}`}>
+                      <p className="text-2xl md:text-3xl font-medium leading-relaxed text-gray-900">
                         {currentCard.headline}
                       </p>
                     </div>

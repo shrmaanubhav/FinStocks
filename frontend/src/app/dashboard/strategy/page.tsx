@@ -71,6 +71,15 @@ type AdviceResponse = {
   type: string;
 };
 
+type PortfolioHolding = {
+  symbol: string;
+  quantity?: number;
+  allocationPercent?: number;
+  trend?: "bullish" | "neutral" | "bearish";
+  sentimentScore?: number;
+};
+type PortfolioHoldings = PortfolioHolding[];
+
 type Message = {
   role: "user" | "bot";
   content: string;
@@ -181,13 +190,13 @@ export default function StrategyPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#0b1220] px-6 py-8">
+    <div className="w-full min-h-screen bg-gray-50 dark:bg-[#0b1220] px-6 py-8">
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500/30 to-brand-600/30 border border-brand-500/40 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-brand-500/30 to-brand-600/30 border border-brand-500/40 flex items-center justify-center">
               <svg
                 className="w-5 h-5 text-brand-400"
                 fill="none"
@@ -202,7 +211,7 @@ export default function StrategyPage() {
                 />
               </svg>
             </div>
-            <h1 className="text-2xl font-semibold text-white">
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
               Investment Strategy
             </h1>
           </div>
@@ -210,7 +219,7 @@ export default function StrategyPage() {
           {!showAdvice && (
             <button
               onClick={() => setShowAdvice(true)}
-              className="flex items-center gap-2 px-4 py-2 text-sm rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white"
+              className="flex items-center gap-2 px-4 py-2 text-sm rounded-xl bg-linear-to-r from-brand-500 to-brand-600 text-white"
             >
               <svg
                 className="w-4 h-4"
@@ -235,11 +244,11 @@ export default function StrategyPage() {
 
           {!expandAdvice && (
             <div className="flex-1 transition-all duration-300">
-              <div className="bg-gray-900/70 border border-white/10 rounded-2xl shadow-2xl p-8">
+              <div className="bg-white dark:bg-gray-900/70 border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl dark:shadow-2xl p-8">
                 {loadingStrategy ? (
-                  <p className="text-sm text-gray-400">Loading strategy…</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Loading strategy…</p>
                 ) : typeof strategy === "string" ? (
-                  <div className="prose prose-invert prose-lg max-w-none">
+                  <div className="prose dark:prose-invert prose-lg max-w-none">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {strategy}
                     </ReactMarkdown>
@@ -258,14 +267,14 @@ export default function StrategyPage() {
               }`}
             >
               <div
-                className={`bg-gray-900/80 border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden ${
-                  expandAdvice ? "h-[80vh]" : "h-[310px]"
+                className={`bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl dark:shadow-2xl flex flex-col overflow-hidden ${
+                  expandAdvice ? "h-[80vh]" : "h-77.5"
                 }`}
               >
                 {/* Advice Header */}
-                <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between bg-gray-900/60">
+                <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 flex items-center justify-between bg-gray-100 dark:bg-gray-900/60">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500/30 to-brand-600/30 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-linear-to-br from-brand-500/30 to-brand-600/30 flex items-center justify-center">
                       <svg
                         className="w-4 h-4 text-brand-400"
                         fill="none"
@@ -280,7 +289,7 @@ export default function StrategyPage() {
                         />
                       </svg>
                     </div>
-                    <span className="text-sm font-medium text-white">
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
                       Advisor AI
                     </span>
                   </div>
@@ -288,7 +297,7 @@ export default function StrategyPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setExpandAdvice((p) => !p)}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition"
+                      className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-white/5 transition"
                     >
                       {expandAdvice ? "−" : "+"}
                     </button>
@@ -298,7 +307,7 @@ export default function StrategyPage() {
                         setShowAdvice(false);
                         setExpandAdvice(false);
                       }}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition"
+                      className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-white/5 transition"
                     >
                       ✕
                     </button>
@@ -320,7 +329,7 @@ export default function StrategyPage() {
                         className={`max-w-[85%] px-3 py-2 rounded-xl text-xs ${
                           msg.role === "user"
                             ? "bg-brand-500 text-white"
-                            : "bg-white/5 text-gray-200"
+                            : "bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-gray-200"
                         }`}
                       >
                         {msg.stocks && (
@@ -328,7 +337,7 @@ export default function StrategyPage() {
                             {msg.stocks.map((s) => (
                               <span
                                 key={s}
-                                className="text-[10px] px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-400"
+                                className="text-[10px] px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-600 dark:text-brand-400"
                               >
                                 {s}
                               </span>
@@ -343,26 +352,26 @@ export default function StrategyPage() {
                   ))}
 
                   {loadingAdvice && (
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
                       Advisor is thinking…
                     </p>
                   )}
                 </div>
 
                 {/* Input */}
-                <div className="p-3 border-t border-white/10 bg-gray-900/60">
+                <div className="p-3 border-t border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-gray-900/60">
                   <div className="flex gap-2">
                     <input
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                       placeholder="Ask advice…"
-                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-brand-500"
+                      className="flex-1 bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2 text-xs text-gray-900 dark:text-gray-200 placeholder-gray-500 focus:outline-none focus:border-brand-500"
                     />
                     <button
                       onClick={sendMessage}
                       disabled={loadingAdvice}
-                      className="flex items-center gap-1 px-3 py-2 text-xs rounded-lg bg-gradient-to-r from-brand-500 to-brand-600 text-white disabled:opacity-40"
+                      className="flex items-center gap-1 px-3 py-2 text-xs rounded-lg bg-linear-to-r from-brand-500 to-brand-600 text-white disabled:opacity-40"
                     >
                       <svg
                         className="w-4 h-4"
@@ -445,9 +454,9 @@ function StrategyDashboard({ data }: { data: StrategyData }) {
 
 function CardShell({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="bg-gray-900/60 border border-white/10 rounded-2xl p-5 space-y-4">
+    <div className="bg-white dark:bg-gray-900/60 border border-gray-200 dark:border-white/10 rounded-2xl p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white">{title}</h3>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{title}</h3>
       </div>
       {children}
     </div>
@@ -459,13 +468,13 @@ function HealthScoreCard() {
   return (
     <CardShell title="Portfolio Health Score">
       <div className="flex items-center justify-between">
-        <span className="text-2xl font-semibold text-white">{score}</span>
-        <span className="text-xs text-gray-400">Gauge</span>
+        <span className="text-2xl font-semibold text-gray-900 dark:text-white">{score}</span>
+        <span className="text-xs text-gray-600 dark:text-gray-400">Gauge</span>
       </div>
-      <div className="h-2 rounded-full bg-white/10">
+      <div className="h-2 rounded-full bg-gray-200 dark:bg-white/10">
         <div className="h-2 rounded-full bg-emerald-500" style={{ width: `${score}%` }} />
       </div>
-      <p className="text-xs text-gray-400">Balanced risk with growth tilt.</p>
+      <p className="text-xs text-gray-600 dark:text-gray-400">Balanced risk with growth tilt.</p>
     </CardShell>
   );
 }
@@ -473,7 +482,7 @@ function HealthScoreCard() {
 function InvestorProfileCard({ profile }: { profile?: StrategyData["investorProfile"] }) {
   return (
     <CardShell title="Investor Profile">
-      <div className="grid grid-cols-2 gap-4 text-xs text-gray-300">
+      <div className="grid grid-cols-2 gap-4 text-xs text-gray-700 dark:text-gray-300">
         <ProfileItem label="Name" value={profile?.name || "N/A"} />
         <ProfileItem label="Age" value={profile?.age?.toString() || "N/A"} />
         <ProfileItem label="Family" value={profile?.familyStatus || "N/A"} />
@@ -491,7 +500,7 @@ function ProfileItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="space-y-1">
       <p className="text-[11px] uppercase tracking-wide text-gray-500">{label}</p>
-      <p className="text-sm text-white">{value}</p>
+      <p className="text-sm text-gray-900 dark:text-white">{value}</p>
     </div>
   );
 }
@@ -500,10 +509,10 @@ function RiskMeterCard({ risk }: { risk?: StrategyData["riskAnalysis"] }) {
   const level = risk?.overallRisk || "Medium";
   const color =
     level === "Low"
-      ? "bg-green-500/20 text-green-300"
+      ? "bg-green-500/20 text-green-600 dark:text-green-300"
       : level === "High"
-      ? "bg-red-500/20 text-red-300"
-      : "bg-yellow-500/20 text-yellow-300";
+      ? "bg-red-500/20 text-red-600 dark:text-red-300"
+      : "bg-yellow-500/20 text-yellow-600 dark:text-yellow-300";
 
   return (
     <CardShell title="Portfolio Risk">
@@ -511,13 +520,13 @@ function RiskMeterCard({ risk }: { risk?: StrategyData["riskAnalysis"] }) {
         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${color}`}>
           {level}
         </span>
-        <span className="text-xs text-gray-400">Risk Meter</span>
+        <span className="text-xs text-gray-600 dark:text-gray-400">Risk Meter</span>
       </div>
-      <div className="space-y-2 text-xs text-gray-300">
+      <div className="space-y-2 text-xs text-gray-700 dark:text-gray-300">
         {(risk?.stockRisks || []).slice(0, 4).map((item) => (
           <div key={item.symbol} className="flex items-center justify-between">
             <span>{item.symbol}</span>
-            <span className="text-gray-400">{item.riskLevel || "N/A"}</span>
+            <span className="text-gray-600 dark:text-gray-400">{item.riskLevel || "N/A"}</span>
           </div>
         ))}
       </div>
@@ -528,16 +537,16 @@ function RiskMeterCard({ risk }: { risk?: StrategyData["riskAnalysis"] }) {
 function InsightsPanel({ insights }: { insights?: StrategyData["insights"] }) {
   return (
     <CardShell title="Insights Panel">
-      <div className="space-y-3 text-xs text-gray-300">
+      <div className="space-y-3 text-xs text-gray-700 dark:text-gray-300">
         {(insights || []).map((item) => (
           <div key={item.symbol} className="space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-white">{item.symbol}</span>
+              <span className="text-gray-900 dark:text-white">{item.symbol}</span>
               <span className={actionToColor(item.action || "hold")}>{item.action || "hold"}</span>
             </div>
             {(item.reasons || []).slice(0, 3).map((reason, idx) => (
-              <div key={`${item.symbol}-insight-${idx}`} className="flex gap-2 text-gray-400">
-                <span className="text-brand-400">•</span>
+              <div key={`${item.symbol}-insight-${idx}`} className="flex gap-2 text-gray-600 dark:text-gray-400">
+                <span className="text-brand-500 dark:text-brand-400">•</span>
                 <span>{reason}</span>
               </div>
             ))}
@@ -551,10 +560,10 @@ function InsightsPanel({ insights }: { insights?: StrategyData["insights"] }) {
 function AIRecommendationPanel({ actionPlan }: { actionPlan?: StrategyData["actionPlan"] }) {
   return (
     <CardShell title="AI Recommendation Panel">
-      <div className="space-y-2 text-xs text-gray-300">
+      <div className="space-y-2 text-xs text-gray-700 dark:text-gray-300">
         {(actionPlan || []).slice(0, 4).map((item) => (
           <div key={item.symbol} className="flex items-start gap-2">
-            <span className="text-green-400">•</span>
+            <span className="text-green-500 dark:text-green-400">•</span>
             <span>{item.symbol}: {item.action}</span>
           </div>
         ))}
@@ -570,11 +579,11 @@ function PortfolioAllocationCard({ charts }: { charts?: StrategyData["portfolioC
       <div className="space-y-3">
         {allocations.map((item) => (
           <div key={item.symbol} className="space-y-1">
-            <div className="flex items-center justify-between text-xs text-gray-300">
+            <div className="flex items-center justify-between text-xs text-gray-700 dark:text-gray-300">
               <span>{item.symbol}</span>
               <span>{item.value}%</span>
             </div>
-            <div className="h-2 rounded-full bg-white/10">
+            <div className="h-2 rounded-full bg-gray-200 dark:bg-white/10">
               <div
                 className="h-2 rounded-full bg-brand-500"
                 style={{ width: `${clampPercent(item.value)}%` }}
@@ -597,18 +606,18 @@ function SentimentBarCard({
   const bars = charts?.sentimentBarChart || [];
   return (
     <CardShell title="Market Sentiment (Bar)">
-      <div className="flex items-center justify-between text-xs text-gray-400">
+      <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
         <span>Overall Mood</span>
         <span>{sentiment?.overallMood || "Neutral"}</span>
       </div>
       <div className="space-y-3">
         {bars.map((item) => (
           <div key={item.symbol} className="space-y-1">
-            <div className="flex items-center justify-between text-xs text-gray-300">
+            <div className="flex items-center justify-between text-xs text-gray-700 dark:text-gray-300">
               <span>{item.symbol}</span>
               <span>{item.score}</span>
             </div>
-            <div className="h-2 rounded-full bg-white/10">
+            <div className="h-2 rounded-full bg-gray-200 dark:bg-white/10">
               <div
                 className="h-2 rounded-full bg-emerald-500"
                 style={{ width: `${clampPercent(Math.abs(item.score) * 100)}%` }}
@@ -621,17 +630,17 @@ function SentimentBarCard({
   );
 }
 
-function PriceTrendCard({ holdings }: { holdings?: StrategyData["portfolio"]["holdings"] }) {
+function PriceTrendCard({ holdings }: { holdings?: PortfolioHoldings }) {
   return (
     <CardShell title="Price Trend (Line)">
-      <div className="space-y-3 text-xs text-gray-300">
-        {(holdings || []).map((item) => (
+      <div className="space-y-3 text-xs text-gray-700 dark:text-gray-300">
+        {(holdings || []).map((item: any) => (
           <div key={item.symbol} className="space-y-1">
             <div className="flex items-center justify-between">
               <span>{item.symbol}</span>
-              <span className="text-gray-400">{item.trend || "neutral"}</span>
+              <span className="text-gray-600 dark:text-gray-400">{item.trend || "neutral"}</span>
             </div>
-            <div className="h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[11px] text-gray-500">
+            <div className="h-10 rounded-lg bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center text-[11px] text-gray-500">
               Trend line data not provided
             </div>
           </div>
@@ -647,11 +656,11 @@ function RecommendedAllocationCard({ data }: { data?: StrategyData["recommendedP
       <div className="space-y-3">
         {(data?.allocations || []).map((item) => (
           <div key={item.symbol} className="space-y-1">
-            <div className="flex items-center justify-between text-xs text-gray-300">
+            <div className="flex items-center justify-between text-xs text-gray-700 dark:text-gray-300">
               <span>{item.symbol}</span>
               <span>{item.recommendedPercent}%</span>
             </div>
-            <div className="h-2 rounded-full bg-white/10">
+            <div className="h-2 rounded-full bg-gray-200 dark:bg-white/10">
               <div
                 className="h-2 rounded-full bg-emerald-500"
                 style={{ width: `${clampPercent(item.recommendedPercent)}%` }}
@@ -670,7 +679,7 @@ function StockCardsSection({
   insights,
   sentiment,
 }: {
-  holdings?: StrategyData["portfolio"]["holdings"];
+  holdings?: PortfolioHoldings;
   risk?: StrategyData["riskAnalysis"];
   insights?: StrategyData["insights"];
   sentiment?: StrategyData["marketSentiment"];
@@ -682,26 +691,26 @@ function StockCardsSection({
   return (
     <CardShell title="Stock Cards">
       <div className="space-y-4">
-        {(holdings || []).map((holding) => (
-          <div key={holding.symbol} className="border border-white/10 rounded-xl p-4 bg-black/20 space-y-3">
+        {(holdings || []).map((holding: any) => (
+          <div key={holding.symbol} className="border border-gray-200 dark:border-white/10 rounded-xl p-4 bg-gray-50 dark:bg-black/20 space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-white">{holding.symbol}</p>
-                <p className="text-xs text-gray-400">Qty: {holding.quantity || 0}</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">{holding.symbol}</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Qty: {holding.quantity || 0}</p>
               </div>
               <span className={`text-xs px-2 py-1 rounded-full ${trendToColor(holding.trend)}`}>
                 {holding.trend || "neutral"}
               </span>
             </div>
-            <div className="grid grid-cols-3 gap-2 text-xs text-gray-300">
+            <div className="grid grid-cols-3 gap-2 text-xs text-gray-700 dark:text-gray-300">
               <Badge label="Risk" value={riskMap.get(holding.symbol) || "N/A"} />
               <Badge label="Sentiment" value={sentimentMap.get(holding.symbol)?.confidence?.toFixed(2) || "N/A"} />
               <Badge label="Allocation" value={`${holding.allocationPercent || 0}%`} />
             </div>
-            <div className="text-xs text-gray-300 space-y-1">
+            <div className="text-xs text-gray-700 dark:text-gray-300 space-y-1">
               {(insightMap.get(holding.symbol)?.reasons || []).slice(0, 3).map((reason, idx) => (
                 <div key={`${holding.symbol}-reason-${idx}`} className="flex gap-2">
-                  <span className="text-brand-400">•</span>
+                  <span className="text-brand-500 dark:text-brand-400">•</span>
                   <span>{reason}</span>
                 </div>
               ))}
@@ -719,20 +728,20 @@ function ComparisonCard({ comparison }: { comparison?: StrategyData["portfolioCo
       <div className="space-y-3">
         {(comparison || []).map((item) => (
           <div key={item.symbol} className="space-y-1">
-            <div className="flex items-center justify-between text-xs text-gray-300">
+            <div className="flex items-center justify-between text-xs text-gray-700 dark:text-gray-300">
               <span>{item.symbol}</span>
               <span>{item.change > 0 ? `+${item.change}%` : `${item.change}%`}</span>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-[11px] text-gray-400">
+            <div className="grid grid-cols-2 gap-2 text-[11px] text-gray-600 dark:text-gray-400">
               <div className="space-y-1">
                 <span>Current {item.currentPercent}%</span>
-                <div className="h-2 rounded-full bg-white/10">
+                <div className="h-2 rounded-full bg-gray-200 dark:bg-white/10">
                   <div className="h-2 rounded-full bg-gray-400/60" style={{ width: `${clampPercent(item.currentPercent)}%` }} />
                 </div>
               </div>
               <div className="space-y-1">
                 <span>Recommended {item.recommendedPercent}%</span>
-                <div className="h-2 rounded-full bg-white/10">
+                <div className="h-2 rounded-full bg-gray-200 dark:bg-white/10">
                   <div className="h-2 rounded-full bg-brand-500" style={{ width: `${clampPercent(item.recommendedPercent)}%` }} />
                 </div>
               </div>
@@ -747,7 +756,7 @@ function ComparisonCard({ comparison }: { comparison?: StrategyData["portfolioCo
 function ForecastCard({ forecast }: { forecast?: StrategyData["forecast"] }) {
   return (
     <CardShell title="Timeline Forecast">
-      <div className="grid grid-cols-3 gap-4 text-xs text-gray-300">
+      <div className="grid grid-cols-3 gap-4 text-xs text-gray-700 dark:text-gray-300">
         <ForecastColumn label="Today" items={forecast?.today} />
         <ForecastColumn label="3 Days" items={forecast?.["3days"]} />
         <ForecastColumn label="1 Week" items={forecast?.["1week"]} />
@@ -773,10 +782,10 @@ function ForecastColumn({ label, items }: { label: string; items?: { symbol: str
 function ActionPlanCard({ actionPlan }: { actionPlan?: StrategyData["actionPlan"] }) {
   return (
     <CardShell title="Action Plan">
-      <div className="space-y-2 text-xs text-gray-300">
+      <div className="space-y-2 text-xs text-gray-700 dark:text-gray-300">
         {(actionPlan || []).map((item) => (
           <div key={item.symbol} className="flex items-start gap-2">
-            <span className="text-brand-400">•</span>
+            <span className="text-brand-500 dark:text-brand-400">•</span>
             <span>{item.symbol}: {item.action}</span>
           </div>
         ))}
@@ -788,10 +797,10 @@ function ActionPlanCard({ actionPlan }: { actionPlan?: StrategyData["actionPlan"
 function FinancialAdviceCard({ advice }: { advice?: StrategyData["financialAdvice"] }) {
   return (
     <CardShell title="Investor Advice">
-      <div className="space-y-2 text-xs text-gray-300">
+      <div className="space-y-2 text-xs text-gray-700 dark:text-gray-300">
         {(advice || []).map((item, idx) => (
           <div key={`advice-${idx}`} className="flex items-start gap-2">
-            <span className="text-green-400">•</span>
+            <span className="text-green-500 dark:text-green-400">•</span>
             <span>{item}</span>
           </div>
         ))}
@@ -814,10 +823,10 @@ function ComponentMapCard() {
 
   return (
     <CardShell title="JSON → UI Map">
-      <div className="space-y-2 text-xs text-gray-300">
+      <div className="space-y-2 text-xs text-gray-700 dark:text-gray-300">
         {items.map((item) => (
           <div key={item} className="flex items-start gap-2">
-            <span className="text-brand-400">•</span>
+            <span className="text-brand-500 dark:text-brand-400">•</span>
             <span>{item}</span>
           </div>
         ))}
@@ -828,7 +837,7 @@ function ComponentMapCard() {
 
 function Badge({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-gray-300">
+    <div className="rounded-lg border border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 px-2 py-1 text-[11px] text-gray-700 dark:text-gray-300">
       <span className="text-gray-500">{label}: </span>
       {value}
     </div>
@@ -841,22 +850,23 @@ function clampPercent(value?: number) {
 }
 
 function trendToColor(trend?: string) {
-  if (trend === "bullish") return "bg-green-500/15 text-green-300";
-  if (trend === "bearish") return "bg-red-500/15 text-red-300";
-  return "bg-yellow-500/15 text-yellow-300";
+  if (trend === "bullish") return "bg-green-500/15 dark:bg-green-500/15 text-green-700 dark:text-green-300";
+  if (trend === "bearish") return "bg-red-500/15 dark:bg-red-500/15 text-red-700 dark:text-red-300";
+  return "bg-yellow-500/15 dark:bg-yellow-500/15 text-yellow-700 dark:text-yellow-300";
 }
 
 function actionToColor(action: string) {
   const normalized = action.toLowerCase();
-  if (normalized.includes("buy") || normalized.includes("increase")) return "text-green-300";
-  if (normalized.includes("sell") || normalized.includes("reduce")) return "text-red-300";
-  return "text-yellow-300";
+  if (normalized.includes("buy") || normalized.includes("increase")) return "text-green-700 dark:text-green-300";
+  if (normalized.includes("sell") || normalized.includes("reduce")) return "text-red-700 dark:text-red-300";
+  return "text-yellow-700 dark:text-yellow-300";
 }
 
 function buildInitialStrategyData(profile: any): StrategyData {
-  const holdings = Array.isArray(profile?.holdings) ? profile.holdings : [];
-  const totalQty = holdings.reduce((sum: number, h: any) => sum + (h.quantity || 0), 0) || 1;
-  const allocation = holdings.map((h: any) => ({
+  const rawHoldings = Array.isArray(profile?.holdings) ? profile.holdings : [];
+  const holdings: PortfolioHoldings = (rawHoldings as PortfolioHoldings) || [];
+  const totalQty = holdings.reduce((sum: number, h: PortfolioHolding) => sum + (h?.quantity || 0), 0) || 1;
+  const allocation = holdings.map((h: PortfolioHolding) => ({
     symbol: String(h.symbol || "").toUpperCase(),
     quantity: h.quantity || 0,
     allocationPercent: Math.round(((h.quantity || 0) / totalQty) * 100),

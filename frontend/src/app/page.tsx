@@ -88,7 +88,7 @@ export default function LandingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+              <span className="text-xl font-bold bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent">
                 FinStocks
               </span>
             </div>
@@ -129,7 +129,7 @@ export default function LandingPage() {
               transition={{ duration: 0.8, delay: 1.0 }}
             >
               <motion.span 
-                className="bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent "
+                className="bg-linear-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent "
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.7, delay: 1.1 }}
@@ -139,7 +139,7 @@ export default function LandingPage() {
               <br />
           
               <motion.span 
-                className="bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent bloc
+                className="bg-linear-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent bloc
                 "
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -175,7 +175,7 @@ export default function LandingPage() {
               >
                 <Link
                   href="/signup"
-                  className={`group px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-500/20 to-purple-600/20 border-[0.2px] border-white/15 text-white text-lg transition-all duration-500 transform ${macbookDone ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6 pointer-events-none'} inline-flex items-center gap-3`}
+                  className={`group px-8 py-4 rounded-2xl bg-linear-to-r from-brand-500/20 to-purple-600/20 border-[0.2px] border-white/15 text-white text-lg transition-all duration-500 transform ${macbookDone ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6 pointer-events-none'} inline-flex items-center gap-3`}
                 >
                   Get Started
                   <motion.svg 
@@ -211,7 +211,7 @@ export default function LandingPage() {
 
       {/* MacBook Scroll Section */}
       <motion.section 
-        className={`relative overflow-hidden transition-all duration-700 ease-out translate-y-[-240px] ${
+        className={`relative overflow-hidden transition-all duration-700 ease-out -translate-y-60 ${
           featuresRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}
         initial={{ opacity: 0, y: 60 }}
@@ -251,7 +251,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-linear-to-br from-brand-500 to-purple-600 flex items-center justify-center">
                 <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
