@@ -190,7 +190,7 @@ export default function StrategyPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 dark:bg-[#0b1220] px-6 py-8">
+    <div className="w-full min-h-screen bg-gray-50 dark:bg-transparent px-6 py-8">
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
@@ -373,20 +373,8 @@ export default function StrategyPage() {
                       disabled={loadingAdvice}
                       className="flex items-center gap-1 px-3 py-2 text-xs rounded-lg bg-linear-to-r from-brand-500 to-brand-600 text-white disabled:opacity-40"
                     >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                        />
-                      </svg>
-                      Send
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-send-horizontal-icon lucide-send-horizontal"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z"/><path d="M6 12h16"/></svg>
+              
                     </button>
                   </div>
                 </div>

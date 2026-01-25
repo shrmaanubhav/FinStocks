@@ -170,15 +170,15 @@ export default function Page() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] w-full px-4 py-6 bg-gray-50 dark:bg-[#0b1220]">
-  <div className="flex flex-col w-full max-w-5xl h-[calc(100vh-140px)] bg-white dark:bg-linear-to-b dark:from-gray-900/90 dark:via-gray-900/80 dark:to-gray-950/90 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden">
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] w-full px-4 py-6 bg-gray-50 dark:bg-transparent ">
+  <div className="flex flex-col w-full max-w-5xl h-[calc(100vh-140px)] bg-white dark:bg-linear-to-b dark:from-gray-900/90 dark:via-gray-900/90 dark:to-gray-950/90 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden">
 
         {/* Header */}
         <div className="px-8 py-5 border-b border-gray-200 dark:border-white/10 shrink-0 bg-gray-50 dark:bg-black/20">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-xl bg-linear-to-br from-brand-500/30 to-brand-600/30 border border-brand-500/30 dark:border-white/15 flex items-center justify-center">
-                <svg className="w-5 h-5 text-brand-600 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-brand-600/50 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
               </div>
@@ -195,7 +195,7 @@ export default function Page() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-5 bg-white dark:bg-transparent">
+  <div className="flex-1 overflow-y-auto px-8 py-6 space-y-5 bg-white dark:bg-transparent">
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 dark:text-gray-400">
               <svg className="w-12 h-12 mb-4 text-gray-600 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -217,7 +217,7 @@ export default function Page() {
                   {msg.content}
                 </div>
               ) : (
-                <div className="bg-gray-50 text-gray-800 border border-gray-200 dark:bg-white/5 dark:text-gray-200 dark:border-white/10 backdrop-blur-sm px-5 py-5 rounded-2xl rounded-bl-md w-full text-sm leading-relaxed">
+                <div className="bg-gray-50 text-gray-900 border border-gray-200 dark:bg-white/8 dark:text-gray-100 dark:border-white/15 backdrop-blur-sm px-5 py-5 rounded-2xl rounded-bl-md w-full text-sm leading-relaxed">
                   {msg.stocks && msg.stocks.length > 0 && (
                     <div className="flex gap-2 mb-3 flex-wrap">
                       {msg.stocks.map((s) => (
@@ -233,7 +233,7 @@ export default function Page() {
                   {msg.structured ? (
                     <StructuredAdviceView data={msg.structured} />
                   ) : (
-                    <div className="prose prose-slate prose-sm max-w-none text-gray-900 dark:prose-invert">
+                    <div className="prose prose-slate prose-sm max-w-none text-gray-900 dark:text-gray-100 dark:prose-invert">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {msg.content}
                       </ReactMarkdown>
@@ -257,7 +257,7 @@ export default function Page() {
         </div>
 
         {/* Input */}
-        <div className="p-5 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-black/20 shrink-0">
+  <div className="p-5 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-black/30 shrink-0">
           <div className="flex gap-3">
             <input
               value={input}
@@ -269,11 +269,9 @@ export default function Page() {
             <button
               onClick={sendMessage}
               disabled={loading}
-              className="px-5 py-3 text-sm font-medium rounded-xl bg-linear-to-r from-brand-500 to-brand-600 text-white disabled:opacity-40 hover:shadow-lg hover:shadow-brand-500/20 transition-all"
+              className="px-5 py-3 text-sm font-medium rounded-xl bg-linear-to-r from-brand-500/50 to-brand-600/50 text-white disabled:opacity-40 hover:shadow-lg hover:shadow-brand-500/20 transition-all"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-send-horizontal-icon lucide-send-horizontal"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z"/><path d="M6 12h16"/></svg>
             </button>
           </div>
         </div>
@@ -290,7 +288,7 @@ function StructuredAdviceView({ data }: { data: StructuredAdvice }) {
   return (
     <div className="space-y-4">
       {summary && (
-        <div className="text-xs text-gray-300 bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+        <div className="text-xs text-gray-800 bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 dark:text-gray-300 dark:bg-white/5 dark:border-white/10">
           {summary}
         </div>
       )}
@@ -320,12 +318,12 @@ function StockAdviceCard({ stock }: { stock: StockAdvice }) {
       : "text-red-300";
 
   return (
-    <div className="rounded-xl border border-white/10 bg-black/20 p-4 space-y-4">
+    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-4 dark:border-white/10 dark:bg-black/20">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-base font-semibold text-white">{stock.symbol}</p>
+          <p className="text-base font-semibold text-gray-900 dark:text-white">{stock.symbol}</p>
           {stock.company_name && (
-            <p className="text-xs text-gray-400">{stock.company_name}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400">{stock.company_name}</p>
           )}
         </div>
         <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${recommendationColor}`}>
@@ -334,15 +332,15 @@ function StockAdviceCard({ stock }: { stock: StockAdvice }) {
       </div>
 
       <div className="grid grid-cols-2 gap-3 text-xs">
-        <div className="rounded-lg bg-white/5 border border-white/10 p-2">
-          <p className="text-gray-400">Confidence</p>
-          <p className="text-white font-semibold">{clampPercent(stock.confidence)}%</p>
+        <div className="rounded-lg bg-gray-100 border border-gray-200 p-2 text-gray-700 dark:bg-white/5 dark:border-white/10 dark:text-gray-300">
+          <p className="text-gray-500 dark:text-gray-400">Confidence</p>
+          <p className="text-gray-900 font-semibold dark:text-white">{clampPercent(stock.confidence)}%</p>
           <ProgressBar value={stock.confidence} color="bg-brand-500" />
         </div>
-        <div className="rounded-lg bg-white/5 border border-white/10 p-2">
-          <p className="text-gray-400">Trend</p>
+        <div className="rounded-lg bg-gray-100 border border-gray-200 p-2 text-gray-700 dark:bg-white/5 dark:border-white/10 dark:text-gray-300">
+          <p className="text-gray-500 dark:text-gray-400">Trend</p>
           <p className={`font-semibold ${trendColor}`}>{capitalize(stock.trend)}</p>
-          <p className="text-gray-500">Risk: {capitalize(stock.risk_level)}</p>
+          <p className="text-gray-600 dark:text-gray-500">Risk: {capitalize(stock.risk_level)}</p>
         </div>
       </div>
 
@@ -353,7 +351,7 @@ function StockAdviceCard({ stock }: { stock: StockAdvice }) {
       </div>
 
       {stock.reasons && stock.reasons.length > 0 && (
-        <ul className="space-y-1 text-xs text-gray-300">
+        <ul className="space-y-1 text-xs text-gray-700 dark:text-gray-300">
           {stock.reasons.slice(0, 3).map((reason, idx) => (
             <li key={`${stock.symbol}-reason-${idx}`} className="flex gap-2">
               <span className="text-brand-400">•</span>
@@ -373,13 +371,13 @@ function StockAdviceCard({ stock }: { stock: StockAdvice }) {
             {showFull ? "Hide Full Advice" : "View Full Advice"}
           </button>
           {showFull && (
-            <div className="mt-3 space-y-3 text-xs text-gray-300 bg-white/5 border border-white/10 rounded-lg px-3 py-3">
+            <div className="mt-3 space-y-3 text-xs text-gray-800 bg-gray-100 border border-gray-200 rounded-lg px-3 py-3 dark:text-gray-300 dark:bg-white/5 dark:border-white/10">
               {stock.full_advice && <p className="leading-relaxed">{stock.full_advice}</p>}
               {stock.tips && stock.tips.length > 0 && (
                 <ul className="space-y-1">
                   {stock.tips.map((tip, idx) => (
                     <li key={`${stock.symbol}-tip-${idx}`} className="flex gap-2">
-                      <span className="text-green-400">•</span>
+                      <span className="text-green-500 dark:text-green-400">•</span>
                       <span>{tip}</span>
                     </li>
                   ))}
@@ -403,7 +401,7 @@ function HorizonBadge({ label, data }: { label: string; data?: HorizonAdvice }) 
       : "bg-red-500/15 text-red-300 border-red-500/30";
 
   return (
-    <div className={`rounded-lg border px-2 py-2 ${color}`}>
+    <div className={`rounded-lg px-2 py-2 bg-gray-100 text-gray-800 border border-gray-200 ${color} dark:bg-transparent dark:border-current`}>
       <p className="text-[10px] uppercase tracking-wide opacity-80">{label}</p>
       <p className="text-xs font-semibold">{recommendation}</p>
       {data?.target_range && <p className="text-[10px] opacity-80">{data.target_range}</p>}
@@ -414,7 +412,7 @@ function HorizonBadge({ label, data }: { label: string; data?: HorizonAdvice }) 
 function ProgressBar({ value, color }: { value?: number; color: string }) {
   const width = clampPercent(value);
   return (
-    <div className="mt-1 h-1.5 w-full rounded-full bg-white/10">
+    <div className="mt-1 h-1.5 w-full rounded-full bg-gray-200 dark:bg-white/10">
       <div className={`h-1.5 rounded-full ${color}`} style={{ width: `${width}%` }} />
     </div>
   );

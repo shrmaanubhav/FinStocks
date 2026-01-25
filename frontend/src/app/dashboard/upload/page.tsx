@@ -48,14 +48,14 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#0b1220] flex items-center justify-center px-6">
-      <div className="-translate-y-10">
-        <div className="w-full max-w-lg bg-gray-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-8">
+    <div className="w-full min-h-screen bg-gray-50 dark:bg-[#0b1220] flex items-center justify-center px-6">
+      <div className="-translate-y-10 w-full max-w-lg">
+        <div className="w-full bg-white border border-gray-200 rounded-2xl shadow-2xl p-8 dark:bg-gray-900/90 dark:border-white/10 backdrop-blur-xl">
 
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500/30 to-brand-600/30 border border-brand-500/40 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-linear-to-br from-brand-500/20 to-brand-600/20 border border-brand-500/30 dark:border-brand-500/40 flex items-center justify-center">
               <svg
-                className="w-6 h-6 text-brand-400"
+                className="w-6 h-6 text-brand-600 dark:text-brand-400"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -70,10 +70,10 @@ export default function UploadPage() {
             </div>
 
             <div>
-              <h1 className="text-xl font-semibold text-white">
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Upload Portfolio PDF
               </h1>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Add your portfolio document to continue
               </p>
             </div>
@@ -88,22 +88,22 @@ export default function UploadPage() {
                 setSuccess(false);
                 setError(null);
               }}
-              className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-brand-500/20 file:text-brand-400 hover:file:bg-brand-500/30"
+              className="w-full text-sm text-gray-800 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-brand-500/15 file:text-brand-600 hover:file:bg-brand-500/25 dark:file:bg-brand-500/20 dark:file:text-brand-400 dark:hover:file:bg-brand-500/30"
             />
 
             {file && (
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-600 dark:text-gray-400">
                 Selected file:{" "}
-                <span className="text-gray-200">{file.name}</span>
+                <span className="text-gray-900 dark:text-gray-200">{file.name}</span>
               </p>
             )}
 
             {error && (
-              <p className="text-sm text-red-400">{error}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
             )}
 
             {success && (
-              <div className="flex items-center gap-2 text-sm text-green-400">
+              <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
                 <svg
                   className="w-5 h-5"
                   fill="none"
@@ -113,7 +113,7 @@ export default function UploadPage() {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
+                    className="w-full mt-4 px-5 py-3 text-sm font-medium rounded-xl bg-linear-to-r from-brand-500 to-brand-600 text-white disabled:opacity-40 shadow-sm"
                     d="M5 13l4 4L19 7"
                   />
                 </svg>

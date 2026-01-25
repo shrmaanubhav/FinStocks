@@ -433,7 +433,7 @@ export default function NewsPage() {
                       </div>
                       <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full">
                         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                        <span className="text-white/80 text-sm">Live</span>
+                        <span className="text-gray-700 text-sm">Live</span>
                       </div>
                     </div>
 

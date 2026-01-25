@@ -108,7 +108,7 @@ export default function LandingPage() {
       <main className={`relative z-10 transition-all duration-700 ease-out ${
         heroRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}>
-        <div className="max-w-7xl mx-auto px-6 pt-30 pb-10">
+        <div className="max-w-7xl mx-auto px-6 pt-50 pb-10">
           <div className="text-center max-w-4xl mx-auto">
             {/* Badge */}
             <motion.div 
@@ -157,8 +157,8 @@ export default function LandingPage() {
               transition={{ duration: 0.7, delay: 1.5 }}
             >
               Get a complete health check of your investments with AI-driven insights, 
-              <span className="text-blue-400">News updates</span>, and 
-              personalized portfolio analysis for Indian retail investors.
+              <span className="text-blue-400"> News updates</span>, and 
+              personalized portfolio analysis for retail investors.
             </motion.p>
 
             {/* CTA Buttons */}
@@ -169,38 +169,44 @@ export default function LandingPage() {
               transition={{ duration: 0.7, delay: 1.7 }}
             >
               <motion.div
-                whileHover={{ scale: 1.05, y: -5 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                className={`${macbookDone ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6 pointer-events-none'} flex gap-4 flex-col sm:flex-row transition-all duration-500`}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 1.7 }}
               >
-                <Link
-                  href="/signup"
-                  className={`group px-8 py-4 rounded-2xl bg-linear-to-r from-brand-500/20 to-purple-600/20 border-[0.2px] border-white/15 text-white text-lg transition-all duration-500 transform ${macbookDone ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6 pointer-events-none'} inline-flex items-center gap-3`}
+                <motion.div
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >
-                  Get Started
-                  <motion.svg 
-                    className="w-5 h-5" 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
-                    stroke="currentColor"
-                    animate={{ x: [0, 4, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
+                  <Link
+                    href="/signup"
+                    className="group px-8 py-4 rounded-2xl bg-linear-to-r from-brand-500/20 to-purple-600/20 border-[0.2px] border-white/15 text-white text-lg transition-all duration-500 transform inline-flex items-center gap-3"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </motion.svg>
-                </Link>
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05, y: -5 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              >
-                <Link
-                  href="/signin"
-                  className="px-8 py-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-sm font-semibold text-lg transition-all duration-300 inline-flex"
+                    Get Started
+                    <motion.svg 
+                      className="w-5 h-5" 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                      animate={{ x: [0, 4, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </motion.svg>
+                  </Link>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >
-                  Sign In
-                </Link>
+                  <Link
+                    href="/signin"
+                    className="px-8 py-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-sm font-semibold text-lg transition-all duration-300 inline-flex"
+                  >
+                    Sign In
+                  </Link>
+                </motion.div>
               </motion.div>
             </motion.div>
       
@@ -211,7 +217,7 @@ export default function LandingPage() {
 
       {/* MacBook Scroll Section */}
       <motion.section 
-        className={`relative overflow-hidden transition-all duration-700 ease-out translate-y-[-200px]  ${
+        className={`relative overflow-hidden transition-all duration-700 ease-out -translate-y-50  ${
           featuresRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
         initial={{ opacity: 0, y: 60 }}

@@ -263,7 +263,7 @@ export default function OnboardingForm({ userId, userEmail, onComplete }: Onboar
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
+    <div className=" bg-gray-950 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         {/* Progress Bar */}
         <div className="mb-8">
